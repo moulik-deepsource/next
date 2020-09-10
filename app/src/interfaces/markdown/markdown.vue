@@ -1,5 +1,5 @@
 <template>
-	<div class="interface-markdown" :class="{ tabbed }">
+	<div class="interface-markdown" :class="{ tabbed, expanded, hasScrollbar }">
 		<div v-if="tabbed" class="toolbar">
 			<v-tabs v-model="currentTab">
 				<v-tab>
@@ -17,17 +17,21 @@
 			:placeholder="placeholder"
 			:value="value"
 			:disabled="disabled"
-			@input="$listeners.input"
+			@input="onInput"
+			ref="textarea"
 		/>
 		<div v-show="showPreview" class="preview-container">
 			<div class="preview" v-html="html"></div>
+		</div>
+		<div class="expand" @click="toggleExpanded">
+			<v-icon :name="expanded ? 'unfold_less' : 'unfold_more'" small />
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
 import marked from 'marked';
-import { defineComponent, computed, ref } from '@vue/composition-api';
+import { defineComponent, computed, ref, onMounted, watch } from '@vue/composition-api';
 
 export default defineComponent({
 	props: {
@@ -48,14 +52,41 @@ export default defineComponent({
 			default: true,
 		},
 	},
-	setup(props) {
+	setup(props, { emit }) {
+		const textarea = ref<Vue | null>(null);
 		const currentTab = ref([0]);
+		const expanded = ref(false);
+		const hasScrollbar = ref(false);
 
 		const html = computed(() => (props.value ? marked(props.value) : ''));
 		const showEdit = computed(() => !props.tabbed || currentTab.value[0] === 0);
 		const showPreview = computed(() => !props.tabbed || currentTab.value[0] !== 0);
 
-		return { html, currentTab, showEdit, showPreview };
+		onMounted(updateHasScrollbar);
+
+		watch(() => currentTab.value, updateHasScrollbar);
+
+		return { html, currentTab, showEdit, showPreview, expanded, hasScrollbar, onInput, textarea, toggleExpanded };
+
+		function toggleExpanded() {
+			expanded.value = !expanded.value;
+
+			setTimeout(() => {
+				updateHasScrollbar();
+			}, 1);
+		}
+
+		function onInput(newVal: string) {
+			emit('input', newVal);
+			updateHasScrollbar();
+		}
+
+		function updateHasScrollbar() {
+			if (textarea.value == null) return;
+			const textareaEl = textarea.value.$el.firstElementChild;
+			if (textareaEl == null) return;
+			hasScrollbar.value = textareaEl.clientHeight < textareaEl.scrollHeight;
+		}
 	},
 });
 </script>
@@ -67,8 +98,13 @@ export default defineComponent({
 	--v-tab-background-color: var(--background-subdued);
 	--v-tab-background-color-active: var(--background-subdued);
 
+	position: relative;
 	display: flex;
 	flex-wrap: wrap;
+
+	&.expanded {
+		--v-textarea-min-height: var(--v-textarea-max-height);
+	}
 
 	.toolbar {
 		width: 100%;
@@ -84,6 +120,16 @@ export default defineComponent({
 		border-radius: var(--border-radius) 0 0 var(--border-radius);
 	}
 
+	.v-textarea,
+	.preview-container {
+		flex-basis: 100px;
+		flex-grow: 1;
+	}
+
+	&.expanded .v-textarea {
+		height: var(--v-textarea-min-height);
+	}
+
 	.preview-container {
 		min-height: var(--v-textarea-min-height);
 		max-height: var(--v-textarea-max-height);
@@ -93,10 +139,16 @@ export default defineComponent({
 		border-radius: 0 var(--border-radius) var(--border-radius) 0;
 	}
 
-	.v-textarea,
-	.preview-container {
-		flex-basis: 100px;
-		flex-grow: 1;
+	.expand {
+		position: absolute;
+		right: 50%;
+		bottom: 0;
+		padding: 5px;
+		cursor: pointer;
+	}
+
+	&.hasScrollbar .expand {
+		right: calc(50% + 14px);
 	}
 
 	&:not(.tabbed) .preview-container {
@@ -113,6 +165,14 @@ export default defineComponent({
 
 	&.tabbed .toolbar {
 		border-bottom: none;
+	}
+
+	&.tabbed .expand {
+		right: 0;
+	}
+
+	&.tabbed.hasScrollbar .expand {
+		right: 14px;
 	}
 
 	::v-deep {

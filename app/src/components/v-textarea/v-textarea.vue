@@ -52,7 +52,7 @@ export default defineComponent({
 		},
 		trim: {
 			type: Boolean,
-			default: true,
+			default: false,
 		},
 	},
 	setup(props, { emit, listeners }) {
