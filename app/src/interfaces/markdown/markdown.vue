@@ -104,13 +104,15 @@ export default defineComponent({
 	}
 
 	&.tabbed .v-textarea {
-		border-top: none;
 		border-radius: 0 0 var(--border-radius) var(--border-radius);
 	}
 
 	&.tabbed .preview-container {
-		border-top: none;
 		border-radius: 0 0 var(--border-radius) var(--border-radius);
+	}
+
+	&.tabbed .toolbar {
+		border-bottom: none;
 	}
 
 	::v-deep {

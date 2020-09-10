@@ -33,7 +33,7 @@ export default defineInterface(({ i18n }) => ({
 				},
 			},
 			schema: {
-				default_value: false,
+				default_value: true,
 			},
 		},
 	],
