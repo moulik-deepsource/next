@@ -62,7 +62,11 @@ export default defineComponent({
 		const showEdit = computed(() => !props.tabbed || currentTab.value[0] === 0);
 		const showPreview = computed(() => !props.tabbed || currentTab.value[0] !== 0);
 
-		onMounted(updateHasScrollbar);
+		onMounted(() => {
+			setTimeout(() => {
+				updateHasScrollbar();
+			}, 100);
+		});
 
 		watch(() => currentTab.value, updateHasScrollbar);
 
