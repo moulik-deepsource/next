@@ -11,19 +11,17 @@
 			<docs-navigation />
 		</template>
 
-		<div class="docs">
-			{{section}} {{file}}
-		</div>
+		<div class="docs" v-html="html" />
 	</private-view>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from '@vue/composition-api';
+import { defineComponent, ref, computed, watch } from '@vue/composition-api';
 import DocsNavigation from '../components/navigation.vue';
 import marked from 'marked';
 import sections from '../components/sections'
 
-declare module '*.md'; 
+declare module '*.md';
 
 export default defineComponent({
 	components: { DocsNavigation },
@@ -38,6 +36,8 @@ export default defineComponent({
 		}
 	},
 	setup(props) {
+		const mdString = ref('');
+
 		const currentSection = computed(() => {
 			const section = sections.find((s) => s.to.split('/')[2] === props.section)
 			if(section === undefined) return sections[0]
@@ -52,14 +52,19 @@ export default defineComponent({
 		const sectionData = computed(() => {
 		})
 
-		const text = computed(async () => {
-			if(currentfile.value === null) return null
-			// const mdFile = await import(`@directus/docs/${currentSection.value}/${currentfile.value}`)
-			const readme = "# Readme"
-			return await marked(readme)
+		const html = computed(() => {
+			if (currentfile.value === null) return null
+			return marked(mdString.value);
 		})
 
-		return {text, currentSection}
+		watch(() => currentfile.value, loadMD, { immediate: true });
+
+		return { html, currentSection }
+
+		async function loadMD() {
+			const md = await import(`raw-loader!@directus/docs/${props.section}/${props.file}.md`);
+			mdString.value = md.default;
+		}
 	}
 });
 </script>
