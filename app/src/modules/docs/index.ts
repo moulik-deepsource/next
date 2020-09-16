@@ -1,9 +1,18 @@
 import { defineModule } from '@/modules/define';
-import AppReference from './routes/app.vue'
 import ApiReference from './routes/api.vue'
-import GettingStarted from './routes/start.vue'
-import Concepts from './routes/concepts.vue'
-import Guides from './routes/guides.vue'
+import MarkdownView from './routes/markdown.vue'
+import sections from './components/sections'
+import {Route, NavigationGuardNext} from 'vue-router'
+
+const reroute = function(to: Route, from: Route, next: NavigationGuardNext<ApiReference>) {
+	let section = sections.find((s) => s.to.split('/')[2] === to.params.section)
+	
+	if(section === undefined) return next(`${sections[0].to}/${sections[0].default}`)
+	
+	if(to.params.file === undefined) return next(`${section.to}/${section.default}`)
+	
+	return next()
+}
 
 export default defineModule(({ i18n }) => ({
 	id: 'docs',
@@ -11,34 +20,25 @@ export default defineModule(({ i18n }) => ({
 	icon: 'info',
 	routes: [
 		{
-			path: '/',
-			redirect: '/getting-started',
-		},
-		{
-			name: 'docs-app',
-			path: '/app-reference',
-			component: AppReference,
-		},
-		{
 			name: 'docs-api',
 			path: '/api-reference',
 			component: ApiReference,
 		},
 		{
-			name: 'docs-start',
-			path: '/getting-started',
-			component: GettingStarted,
+			path: '/',
+			beforeEnter: reroute
 		},
 		{
-			name: 'docs-concepts',
-			path: '/concepts',
-			component: Concepts,
+			path: '/:section',
+			beforeEnter: reroute
 		},
 		{
-			name: 'docs-guides',
-			path: '/guides',
-			component: Guides,
-		},
+			name: 'markdown',
+			path: '/:section/:file',
+			beforeEnter: reroute,
+			component: MarkdownView,
+			props: true
+		}
 	],
 	order: Infinity,
 	persistent: true,
