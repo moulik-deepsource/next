@@ -1,28 +1,62 @@
-import { i18n } from '@/lang';
+export type Section = {
+	name: string;
+	to: string;
+	icon?: string;
+	children?: Section[];
+	default?: string;
+};
 
-export default [
+const sections: Section[] = [
 	{
 		icon: 'bubble_chart',
-		name: i18n.t('getting_started'),
-        to: `/docs/getting-started`,
-        default: 'readme.md'
+		name: 'Getting Started',
+		to: '/docs/getting-started',
+		children: [
+			{
+				name: 'Introduction',
+				to: '/docs/getting-started/introduction',
+			},
+			{
+				name: 'Installation',
+				to: '/docs/getting-started/installation',
+			},
+			{
+				name: 'Contributing',
+				to: '/docs/getting-started/contributing',
+			},
+			{
+				name: 'Troubleshooting',
+				to: '/docs/getting-started/trouble',
+				children: [
+					{
+						name: 'Technical Support',
+						to: '/docs/getting-started/trouble/tech-support',
+					},
+					{
+						name: 'Premium Support',
+						to: '/docs/getting-started/trouble/prem-support',
+					},
+				],
+			},
+		],
 	},
 	{
 		icon: 'school',
-		name: i18n.t('concepts'),
-        to: `/docs/concepts`,
-        default: 'readme.md'
+		name: 'Concepts',
+		to: '/docs/concepts',
+		default: 'readme',
 	},
 	{
 		icon: 'format_list_numbered',
-		name: i18n.t('guides'),
-		to: `/docs/guides`,
-		default: 'readme.md'
+		name: 'Guides',
+		to: 'docs/guides',
+		default: 'readme',
 	},
 	{
 		icon: 'code',
-		name: i18n.t('api_reference'),
-        to: `/docs/api-reference`,
-        default: 'readme.md'
+		name: 'Api Reference',
+		to: `/docs/api-reference`,
+		default: 'readme',
 	},
 ];
+export default sections;

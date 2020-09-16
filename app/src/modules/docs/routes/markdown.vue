@@ -1,25 +1,32 @@
 <template>
-	<private-view :title="currentSection.name">
-		<template #headline>{{ $t('docs') }}</template>
-		<template #title-outer:prepend>
+	<private-view :title="title">
+		<template v-if="notFound === false" #headline>Documentation</template>
+		<template v-if="notFound === false" #title-outer:prepend>
 			<v-button rounded disabled icon>
-				<v-icon :name="currentSection.icon" />
+				<v-icon :name="section.icon" />
 			</v-button>
 		</template>
 
 		<template #navigation>
 			<docs-navigation />
 		</template>
-
-		<div class="docs" v-html="html" />
+		<div class="error" v-if="notFound">
+			<v-info icon="not_interested" title="Documentation Not Found">
+				The documentation you are looking for doesn't seem to exist.
+			</v-info>
+		</div>
+		<div v-else class="docs">
+			<div class="md" v-html="html" />
+		</div>
 	</private-view>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from '@vue/composition-api';
+import { defineComponent, ref, computed, watch, PropType } from '@vue/composition-api';
 import DocsNavigation from '../components/navigation.vue';
 import marked from 'marked';
-import sections from '../components/sections'
+import highlight from 'highlight.js';
+import { Section } from '../components/sections';
 
 declare module '*.md';
 
@@ -27,51 +34,74 @@ export default defineComponent({
 	components: { DocsNavigation },
 	props: {
 		section: {
-			type: String,
-			default: null
+			type: Object as PropType<Section>,
+			default: null,
 		},
-		file: {
-			type: String,
-			default: null
-		}
 	},
 	setup(props) {
-		const mdString = ref('');
+		const mdString = ref<string | null>(null);
 
-		const currentSection = computed(() => {
-			const section = sections.find((s) => s.to.split('/')[2] === props.section)
-			if(section === undefined) return sections[0]
-			return section
-		})
+		const notFound = computed(() => props.section === null || mdString.value === null);
 
-		const currentfile = computed(() => {
-			if(props.file !== null) return props.file
-			return 'readme.md'
-		})
-
-		const sectionData = computed(() => {
-		})
+		const title = computed(() => (notFound.value ? 'Page Not Found' : props.section.name));
 
 		const html = computed(() => {
-			if (currentfile.value === null) return null
-			return marked(mdString.value);
-		})
+			if (mdString.value === null) return '';
 
-		watch(() => currentfile.value, loadMD, { immediate: true });
+			let html = marked(mdString.value, { highlight: (code) => highlight.highlightAuto(code).value });
 
-		return { html, currentSection }
+			const regex = /:::(.*?) (.*?)\n((\s|.)*?):::/gm;
+
+			html = html.replaceAll(regex, (match: string, type: string, title: string, body: string) => {
+				return `<div class="hint ${type}"><p class="hint-title">${title}</p><p class="hint-body">${body}</p></div>`;
+			});
+
+			return html;
+		});
+
+		watch(() => props.section, loadMD, { immediate: true });
+
+		return { html, notFound, title };
 
 		async function loadMD() {
-			const md = await import(`raw-loader!@directus/docs/${props.section}/${props.file}.md`);
-			mdString.value = md.default;
+			if (props.section === null) {
+				mdString.value = null;
+				return;
+			}
+
+			const loadString = props.section.to.replace('/docs', '');
+
+			try {
+				const md = await import(`raw-loader!@directus/docs${loadString}.md`);
+				mdString.value = md.default;
+			} catch (exception) {
+				mdString.value = null;
+			}
 		}
-	}
+	},
 });
 </script>
 
 <style lang="scss" scoped>
+@import '@/styles/mixins/markdown.scss';
+
+.error {
+	padding: 20vh 0;
+}
+
 .docs {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	padding: var(--content-padding);
 	padding-bottom: var(--content-padding-bottom);
+
+	.md {
+		max-width: 740px;
+
+		::v-deep {
+			@include markdown;
+		}
+	}
 }
 </style>

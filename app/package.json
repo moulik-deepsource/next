@@ -30,8 +30,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@directus/format-title": "^3.2.0",
     "@directus/docs": "^9.0.0-alpha.38",
+    "@directus/format-title": "^3.2.0",
     "@popperjs/core": "^2.4.3",
     "@sindresorhus/slugify": "^1.0.0",
     "@tinymce/tinymce-vue": "^3.2.2",
@@ -54,6 +54,7 @@
     "csslint": "^1.0.5",
     "date-fns": "^2.14.0",
     "diff": "^4.0.2",
+    "highlight.js": "^10.2.0",
     "htmlhint": "^0.14.1",
     "joi": "^17.2.1",
     "js-yaml": "^3.14.0",
