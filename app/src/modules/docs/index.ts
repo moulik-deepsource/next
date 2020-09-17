@@ -1,5 +1,5 @@
 import { defineModule } from '@/modules/define';
-import ApiReference from './routes/api.vue';
+import ApiReference from './routes/api/api.vue';
 import MarkdownView from './routes/markdown.vue';
 import sections, { Section } from './components/sections';
 import { Route, NavigationGuard } from 'vue-router';
@@ -40,6 +40,11 @@ function urlToSection(urlSections: string[], sections: Section[]): Section | nul
 	return sectionDeep;
 }
 
+function props(route: Route) {
+	const section = urlToSection(urlSplitter(route.path), sections);
+	return { section };
+}
+
 export default defineModule(({ i18n }) => ({
 	id: 'docs',
 	name: i18n.t('docs'),
@@ -47,16 +52,14 @@ export default defineModule(({ i18n }) => ({
 	routes: [
 		{
 			name: 'docs-api',
-			path: '/api-reference',
+			path: '/api-reference*',
 			component: ApiReference,
+			props: props,
 		},
 		{
 			path: '/*',
 			component: MarkdownView,
-			props: (route: Route) => {
-				const section = urlToSection(urlSplitter(route.path), sections);
-				return { section };
-			},
+			props: props,
 		},
 	],
 	order: Infinity,
