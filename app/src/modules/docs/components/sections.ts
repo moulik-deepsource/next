@@ -1,3 +1,5 @@
+import { tags, components } from '../components/openapi-deref.json';
+
 export type Section = {
 	name: string;
 	to: string;
@@ -50,14 +52,42 @@ const sections: Section[] = [
 	{
 		icon: 'format_list_numbered',
 		name: 'Guides',
-		to: 'docs/guides',
+		to: '/docs/guides',
 		default: 'readme',
 	},
 	{
 		icon: 'code',
 		name: 'Api Reference',
 		to: `/docs/api-reference`,
-		default: 'readme',
+		children: [
+			{
+				name: 'General Information',
+				to: '/docs/api-reference/general',
+			},
+			{
+				name: 'Endpoints',
+				to: '/docs/api-reference/endpoints',
+				children: [
+					...tags.map((tag) => {
+						const id = tag.name.replace(' ', '-').toLowerCase();
+						const section: Section = { name: tag.name, to: `/docs/api-reference/endpoints/${id}` };
+						return section;
+					}),
+				],
+			},
+			{
+				name: 'Components',
+				to: '/docs/api-reference/schemas',
+				children: [
+					...Object.entries(components.schemas).map((entry) => {
+						const id = entry[0].replace(' ', '-').toLowerCase();
+						const section: Section = { name: entry[0], to: `/docs/api-reference/schemas/${id}` };
+						return section;
+					}),
+				],
+			},
+		],
 	},
 ];
+
 export default sections;
