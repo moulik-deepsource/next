@@ -2,6 +2,7 @@ export type Section = {
 	name: string;
 	to: string;
 	icon?: string;
+	sectionIcon?: string;
 	children?: Section[];
 	default?: string;
 };

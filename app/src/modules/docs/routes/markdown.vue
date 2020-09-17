@@ -3,7 +3,7 @@
 		<template v-if="notFound === false" #headline>Documentation</template>
 		<template v-if="notFound === false" #title-outer:prepend>
 			<v-button rounded disabled icon>
-				<v-icon :name="section.icon" />
+				<v-icon :name="section.icon || section.sectionIcon" />
 			</v-button>
 		</template>
 

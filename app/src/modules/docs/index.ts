@@ -30,7 +30,13 @@ function urlToSection(urlSections: string[], sections: Section[]): Section | nul
 
 	const sectionDeep = urlToSection(urlSections.slice(1), section.children);
 
-	if (sectionDeep !== null && section.icon !== undefined) sectionDeep.icon = section.icon;
+	if (
+		sectionDeep !== null &&
+		sectionDeep.icon === undefined &&
+		sectionDeep.sectionIcon === undefined &&
+		section.icon !== undefined
+	)
+		sectionDeep.sectionIcon = section.icon;
 	return sectionDeep;
 }
 

@@ -1,14 +1,16 @@
 <template>
-	<v-list-item v-if="section.children === undefined">
-		<v-list-item-icon><v-icon v-if="section.icon" :name="section.icon" /></v-list-item-icon>
+	<v-list-item v-if="section.children === undefined" :to="section.to">
+		<v-list-item-icon v-if="section.icon"><v-icon :name="section.icon" /></v-list-item-icon>
 		<v-list-item-content>
 			<v-list-item-title>{{ section.name }}</v-list-item-title>
 		</v-list-item-content>
 	</v-list-item>
 	<v-list-group v-else>
 		<template #activator>
-			<v-icon v-if="section.icon" :name="section.icon" />
-			{{ section.name }}
+			<v-list-item-icon v-if="section.icon"><v-icon :name="section.icon" /></v-list-item-icon>
+			<v-list-item-content>
+				<v-list-item-title>{{ section.name }}</v-list-item-title>
+			</v-list-item-content>
 		</template>
 		<navigation-list-item v-for="(childSection, index) in section.children" :key="index" :section="childSection" />
 	</v-list-group>
