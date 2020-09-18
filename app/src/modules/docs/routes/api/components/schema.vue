@@ -1,25 +1,25 @@
 <template>
-	<div>
-		<div class="schema">
-			<div v-if="name" class="name">{{ name }}</div>
-			<div v-if="typeFiler" class="type-filter">{{ typeFiler }}</div>
-			<div class="types">
-				<div class="type" v-for="(type, index) in types" :key="index">
-					<div v-if="type.type === 'object'" class="object">
-						<div>Object</div>
-						<div v-if="type.properties" class="properties">
-							<schema v-for="(val, key) in type.properties" :key="key" :schema="val" :name="key"></schema>
-						</div>
-					</div>
-					<div v-else-if="type.type === 'string'">
-						<span>{{ type.type }}</span>
-						<span v-if="type.format">{{ type.format }}</span>
-						<span v-if="type.enum">Types: {{ type.enum }}</span>
-					</div>
-					<div v-else>{{ type.type }}</div>
-					<div v-if="type.example" class="example">Example: {{ type.example }}</div>
-					<div v-if="type.description" class="description">Description: {{ type.description }}</div>
+	<div class="schema">
+		<div v-if="typeFiler" class="type-filter">{{ typeFiler }}</div>
+		<div class="types">
+			<div class="type" v-for="(type, index) in types" :key="index">
+				<div v-if="type.type === 'object'" class="object">
+					<div>Object</div>
+					<table v-if="type.properties" class="properties">
+						<tr v-for="(val, key) in type.properties" :key="key">
+							<td v-if="key" class="name">{{ key }}</td>
+							<td><schema :schema="val" :name="key"></schema></td>
+						</tr>
+					</table>
 				</div>
+				<div v-else-if="type.type === 'string'">
+					<span>{{ type.type }}</span>
+					<span v-if="type.format">{{ type.format }}</span>
+					<span v-if="type.enum">Types: {{ type.enum }}</span>
+				</div>
+				<div v-else>{{ type.type }}</div>
+				<div v-if="type.example" class="example">Example: {{ type.example }}</div>
+				<div v-if="type.description" class="description">Description: {{ type.description }}</div>
 			</div>
 		</div>
 	</div>
@@ -82,8 +82,13 @@ export default defineComponent({
 		font-family: monospace;
 	}
 
-	.object .properties {
+	.object table {
 		padding-left: 16px;
+
+		tr {
+			vertical-align: top;
+			border-bottom: 1px solid black;
+		}
 	}
 }
 </style>
