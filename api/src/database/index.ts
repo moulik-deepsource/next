@@ -18,8 +18,14 @@ for (let [key, value] of Object.entries(env)) {
 
 	key = key.slice(3); // remove `DB_`
 
-	connectionConfig[camelCase(key)] = value;
+	if (key === 'port') {
+		connectionConfig[camelCase(key)] = Number(value);
+	} else {
+		connectionConfig[camelCase(key)] = value;
+	}
 }
+
+console.log(connectionConfig);
 
 const knexConfig: Config = {
 	client: env.DB_CLIENT,
