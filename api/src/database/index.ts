@@ -25,8 +25,6 @@ for (let [key, value] of Object.entries(env)) {
 	}
 }
 
-console.log(connectionConfig);
-
 const knexConfig: Config = {
 	client: env.DB_CLIENT,
 	connection: connectionConfig,
