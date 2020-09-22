@@ -1,24 +1,12 @@
 <template>
-	<private-view :title="title">
-		<template v-if="notFound === false" #headline>Documentation</template>
-		<template v-if="notFound === false" #title-outer:prepend>
-			<v-button rounded disabled icon>
-				<v-icon :name="section.icon || section.sectionIcon" />
-			</v-button>
-		</template>
-
-		<template #navigation>
-			<docs-navigation />
-		</template>
-		<div class="error" v-if="notFound">
-			<v-info icon="not_interested" title="Documentation Not Found">
-				The documentation you are looking for doesn't seem to exist.
-			</v-info>
-		</div>
-		<div v-else class="docs">
-			<div class="md" v-html="html" />
-		</div>
-	</private-view>
+	<div class="error" v-if="notFound">
+		<v-info icon="not_interested" title="Documentation Not Found">
+			The documentation you are looking for doesn't seem to exist.
+		</v-info>
+	</div>
+	<div v-else class="docs">
+		<div class="md" v-html="html" />
+	</div>
 </template>
 
 <script lang="ts">
@@ -43,8 +31,6 @@ export default defineComponent({
 
 		const notFound = computed(() => props.section === null || mdString.value === null);
 
-		const title = computed(() => (notFound.value ? 'Page Not Found' : props.section.name));
-
 		const html = computed(() => {
 			if (mdString.value === null) return '';
 
@@ -61,7 +47,7 @@ export default defineComponent({
 
 		watch(() => props.section, loadMD, { immediate: true });
 
-		return { html, notFound, title };
+		return { html, notFound };
 
 		async function loadMD() {
 			if (props.section === null) {
