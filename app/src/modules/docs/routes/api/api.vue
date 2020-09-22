@@ -1,27 +1,14 @@
 <template>
-	<private-view title="Api Reference">
-		<template #headline>Documentation</template>
-		<template #title-outer:prepend>
-			<v-button rounded disabled icon>
-				<v-icon name="code" />
-			</v-button>
-		</template>
-
-		<template #navigation>
-			<docs-navigation />
-		</template>
-
-		<div class="error" v-if="notFound">
-			<v-info icon="not_interested" title="Api Reference Not Found">
-				The api reference you are looking for doesn't seem to exist.
-			</v-info>
-		</div>
-		<div class="api-reference" v-else>
-			<general v-if="type === 'general'" :section="section" />
-			<endpoints v-else-if="type === 'endpoints'" :section="section" :page="page" />
-			<schemas v-else-if="type === 'schemas'" :section="section" :page="page" />
-		</div>
-	</private-view>
+	<div class="error" v-if="notFound">
+		<v-info icon="not_interested" title="Api Reference Not Found">
+			The api reference you are looking for doesn't seem to exist.
+		</v-info>
+	</div>
+	<div class="api-reference" v-else>
+		<general v-if="type === 'general'" :section="section" />
+		<endpoints v-else-if="type === 'endpoints'" :section="section" :page="page" />
+		<schemas v-else-if="type === 'schemas'" :section="section" :page="page" />
+	</div>
 </template>
 
 <script lang="ts">

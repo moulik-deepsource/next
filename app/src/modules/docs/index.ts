@@ -1,8 +1,7 @@
 import { defineModule } from '@/modules/define';
-import ApiReference from './routes/api/api.vue';
-import MarkdownView from './routes/markdown.vue';
+import Docs from './routes/docs.vue';
 import sections, { Section } from './components/sections';
-import { Route, NavigationGuard } from 'vue-router';
+import { Route } from 'vue-router';
 
 function urlSplitter(url: string) {
 	if (url.startsWith('/docs')) url = url.replace('/docs', '');
@@ -51,14 +50,8 @@ export default defineModule(({ i18n }) => ({
 	icon: 'info',
 	routes: [
 		{
-			name: 'docs-api',
-			path: '/api-reference*',
-			component: ApiReference,
-			props: props,
-		},
-		{
 			path: '/*',
-			component: MarkdownView,
+			component: Docs,
 			props: props,
 		},
 	],
