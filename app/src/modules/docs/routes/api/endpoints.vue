@@ -31,7 +31,13 @@
 						<th>Description</th>
 					</tr>
 					<tr class="parameter" v-for="(param, i) in data.parameters" :key="i">
-						<td class="name" :class="{ required: param.required }">{{ param.name }}</td>
+						<td
+							class="name"
+							:class="{ required: param.required }"
+							v-tooltip.left="param.required ? 'This is required' : null"
+						>
+							{{ param.name }}
+						</td>
 						<td class="in">{{ param.in }}</td>
 						<td><schema-component :schema="param.schema" /></td>
 						<td class="description">{{ param.description }}</td>

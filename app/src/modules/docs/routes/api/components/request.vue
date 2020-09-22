@@ -32,11 +32,19 @@
 			</v-tab-item>
 			<v-tab-item>
 				<interface-code v-model="response" type="json" />
+				<div class="response-status" v-if="responseStatus">
+					<span class="status" :class="{ success: [200, 202, 203].includes(responseStatus.status) }">
+						{{ responseStatus.status }}
+					</span>
+					<span class="text">{{ responseStatus.statusText }}</span>
+				</div>
 			</v-tab-item>
 			<v-tab-item class="schema">
 				<div v-for="(response, status, i) in operation.responses" :key="i">
 					<div class="title">
-						<span class="status">{{ status }}</span>
+						<span class="status" :class="{ success: [200, 202, 203].includes(Number(status)) }">
+							{{ status }}
+						</span>
 						<span class="description">{{ response.description }}</span>
 					</div>
 					<schema-component
@@ -90,8 +98,17 @@ export default defineComponent({
 			(val) => (url.value = val)
 		);
 
+		watch(
+			() => props.operation,
+			(val) => {
+				response.value = null;
+				(responseStatus.value = null), (requestBody.value = null);
+			}
+		);
+
 		const selectedTab = ref([2]);
 		const response = ref<Record<string, any> | null>(null);
+		const responseStatus = ref<{ status: number; statusText: string } | null>(null);
 		const requestBody = ref<Record<string, any> | null>(null);
 
 		const hasRequestBody = computed(
@@ -117,32 +134,41 @@ export default defineComponent({
 			request,
 			response,
 			requestBody,
+			responseStatus,
 		};
 
 		async function request() {
 			if (url.value === null || selectedAction.value === null) return;
 
-			switch (selectedAction.value) {
-				case 'GET':
-					let request = await api.get(url.value);
-					if (request.data.data) response.value = request.data.data;
-					break;
-				case 'POST':
-					request = await api.post(url.value, requestBody.value);
-					if (request.data.data) response.value = request.data.data;
-					break;
-				case 'PATCH':
-					request = await api.patch(url.value, requestBody.value);
-					if (request.data.data) response.value = request.data.data;
-					break;
-				case 'DELETE':
-					request = await api.delete(url.value);
-					if (request.data.data) response.value = request.data.data;
-					break;
+			selectedTab.value = [2];
+			let request;
 
-				default:
-					break;
+			try {
+				switch (selectedAction.value) {
+					case 'GET':
+						request = await api.get(url.value);
+						break;
+					case 'POST':
+						request = await api.post(url.value, requestBody.value);
+						break;
+					case 'PATCH':
+						request = await api.patch(url.value, requestBody.value);
+						break;
+					case 'DELETE':
+						request = await api.delete(url.value);
+						break;
+					default:
+						break;
+				}
+			} catch (error) {
+				if (error.response === undefined) return;
+				if (error.response.status)
+					responseStatus.value = { status: error.response.status, statusText: error.response.statusText };
 			}
+			if (request === undefined) return;
+
+			if (request.data) response.value = request.data;
+			if (request.status) responseStatus.value = { status: request.status, statusText: request.statusText };
 		}
 	},
 });
@@ -165,6 +191,22 @@ export default defineComponent({
 		}
 	}
 
+	.response-status {
+		padding: 8px;
+		.status {
+			display: inline-block;
+			margin-right: 8px;
+			padding: 4px 8px;
+			color: var(--foreground-inverted);
+			background-color: var(--danger);
+			border-radius: var(--border-radius);
+
+			&.success {
+				background-color: var(--primary);
+			}
+		}
+	}
+
 	.schema {
 		padding: 10px 20px;
 		background-color: var(--background-subdued);
@@ -178,8 +220,12 @@ export default defineComponent({
 				margin-right: 12px;
 				padding: 4px 8px;
 				color: var(--foreground-inverted);
-				background-color: var(--primary);
+				background-color: var(--danger);
 				border-radius: var(--border-radius);
+
+				&.success {
+					background-color: var(--primary);
+				}
 			}
 		}
 	}
