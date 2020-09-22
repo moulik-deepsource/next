@@ -1,5 +1,5 @@
 import { AST, NestedCollectionAST } from '../types/ast';
-import { clone, uniq, pick } from 'lodash';
+import { clone, uniq, pick, isObjectLike } from 'lodash';
 import database from './index';
 import SchemaInspector from 'knex-schema-inspector';
 import { Query, Item } from '../types';
@@ -8,9 +8,9 @@ import applyQuery from '../utils/apply-query';
 import Knex from 'knex';
 
 type RunASTOptions = {
-	query?: AST['query'],
-	knex?: Knex
-}
+	query?: AST['query'];
+	knex?: Knex;
+};
 
 export default async function runAST(ast: AST, options?: RunASTOptions) {
 	const query = options?.query || ast.query;
@@ -48,8 +48,15 @@ export default async function runAST(ast: AST, options?: RunASTOptions) {
 	}
 
 	/** Always fetch primary key in case there's a nested relation that needs it */
-	if (toplevelFields.includes(primaryKeyField) === false) {
-		tempFields.push(primaryKeyField);
+
+	/** Always fetch primary key in case there's a nested relation that needs it
+	 * Only if toplevelfiels != include all columns as duplicate field names
+	 * in MSTSQL will create ambigious column error
+	 */
+	if (!toplevelFields.includes('*')) {
+		if (toplevelFields.includes(primaryKeyField) === false) {
+			tempFields.push(primaryKeyField);
+		}
 	}
 
 	let dbQuery = knex.select([...toplevelFields, ...tempFields]).from(ast.name);
