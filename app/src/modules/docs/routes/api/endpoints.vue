@@ -43,7 +43,7 @@
 						<td class="description">{{ param.description }}</td>
 					</tr>
 				</table>
-				<request
+				<request-component
 					:action="data.action"
 					:operation="data.operation"
 					:path="data.path"
@@ -58,7 +58,7 @@
 import { defineComponent, computed, PropType } from '@vue/composition-api';
 import openapi from '../../components/openapi-deref.json';
 import { Section } from '../../components/sections';
-import Request from './components/request.vue';
+import RequestComponent from './components/request.vue';
 import SchemaComponent from './components/schema.vue';
 import { PathItemObject, OperationObject, ParameterObject, ReferenceObject } from 'openapi3-ts';
 
@@ -81,7 +81,7 @@ interface Data {
 }
 
 export default defineComponent({
-	components: { Request, SchemaComponent },
+	components: { RequestComponent, SchemaComponent },
 	props: {
 		section: {
 			type: Object as PropType<Section>,
