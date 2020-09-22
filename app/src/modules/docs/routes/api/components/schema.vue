@@ -29,7 +29,7 @@
 				<template v-else-if="type.type === 'array'">
 					<table>
 						<tr>
-							<td class="name">items</td>
+							<td class="name">items:</td>
 							<td><schema :schema="type.items" name="items"></schema></td>
 						</tr>
 					</table>
@@ -53,7 +53,7 @@
 						<br />
 						enum: {{ type.enum.join(', ') }}
 					</span>
-					<span v-if="type.pattern">
+					<span class="pattern" v-if="type.pattern">
 						<br />
 						pattern: {{ type.pattern }}
 					</span>
@@ -159,6 +159,7 @@ export default defineComponent({
 	}
 
 	.types {
+		overflow: hidden;
 		.type {
 			&:not(:last-child) {
 				margin-bottom: 4px;
@@ -189,6 +190,10 @@ export default defineComponent({
 
 		&.description {
 			color: var(--foreground-normal);
+		}
+
+		&.pattern {
+			white-space: nowrap;
 		}
 	}
 }
