@@ -59,6 +59,7 @@
     "jshint": "^2.11.1",
     "jsonlint": "^1.6.3",
     "jsonlint-mod": "^1.7.5",
+    "knex-schema-inspector": "0.0.19",
     "lodash": "^4.17.19",
     "marked": "^1.1.1",
     "micromustache": "^7.1.0",
