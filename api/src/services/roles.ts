@@ -1,10 +1,10 @@
-import ItemsService from './items';
+import { ItemsService } from './items';
 import { AbstractServiceOptions, PrimaryKey } from '../types';
-import PermissionsService from './permissions';
-import UsersService from './users';
-import PresetsService from './presets';
+import { PermissionsService } from './permissions';
+import { UsersService } from './users';
+import { PresetsService } from './presets';
 
-export default class RolesService extends ItemsService {
+export class RolesService extends ItemsService {
 	constructor(options?: AbstractServiceOptions) {
 		super('directus_roles', options);
 	}
@@ -19,10 +19,10 @@ export default class RolesService extends ItemsService {
 			knex: this.knex,
 			accountability: this.accountability,
 		});
-		const permissionsForRole = await permissionsService.readByQuery({
+		const permissionsForRole = (await permissionsService.readByQuery({
 			fields: ['id'],
 			filter: { role: { _in: keys } },
-		});
+		})) as { id: number }[];
 		const permissionIDs = permissionsForRole.map((permission) => permission.id);
 		await permissionsService.delete(permissionIDs);
 
@@ -31,10 +31,10 @@ export default class RolesService extends ItemsService {
 			knex: this.knex,
 			accountability: this.accountability,
 		});
-		const presetsForRole = await presetsService.readByQuery({
+		const presetsForRole = (await presetsService.readByQuery({
 			fields: ['id'],
 			filter: { role: { _in: keys } },
-		});
+		})) as { id: string }[];
 		const presetIDs = presetsForRole.map((preset) => preset.id);
 		await presetsService.delete(presetIDs);
 
@@ -43,10 +43,10 @@ export default class RolesService extends ItemsService {
 			knex: this.knex,
 			accountability: this.accountability,
 		});
-		const usersInRole = await usersService.readByQuery({
+		const usersInRole = (await usersService.readByQuery({
 			fields: ['id'],
 			filter: { role: { _in: keys } },
-		});
+		})) as { id: string }[];
 		const userIDs = usersInRole.map((user) => user.id);
 		await usersService.update({ status: 'suspended', role: null }, userIDs);
 
