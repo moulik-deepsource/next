@@ -90,14 +90,23 @@ export function applyFilter(dbQuery: QueryBuilder, filter: Filter) {
 				let value = compareValue;
 				if (typeof value === 'string') value = value.split(',');
 
-				dbQuery.whereIn(key, value as string[]);
+				let valueArr = value as string[];
+				// need to flatten array as if the array contains
+				// an array. IN is rendered as IN ((@p1, @p2))
+				// double brackets do NOT work in mssql.
+				let valueFlatten = valueArr.flat();
+				dbQuery.whereIn(key, valueFlatten);
 			}
 
 			if (operator === '_nin') {
 				let value = compareValue;
+				// need to flatten array as if the array contains
+				// an array. NOT IN is rendered as NOT IN ((@p1, @p2))
+				// double brackets do NOT work in mssql.
 				if (typeof value === 'string') value = value.split(',');
-
-				dbQuery.whereNotIn(key, value as string[]);
+				let valueArr = value as string[];
+				let valueFlatten = valueArr.flat();
+				dbQuery.whereNotIn(key, valueFlatten);
 			}
 
 			if (operator === '_null') {
@@ -125,7 +134,6 @@ export function applyFilter(dbQuery: QueryBuilder, filter: Filter) {
 			if (operator === '_between') {
 				let value = compareValue;
 				if (typeof value === 'string') value = value.split(',');
-
 				dbQuery.whereBetween(key, value);
 			}
 

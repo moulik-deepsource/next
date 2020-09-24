@@ -6,6 +6,7 @@ import logger from '../logger';
 import env from '../env';
 
 import SchemaInspector from 'knex-schema-inspector';
+import { isNumber } from 'lodash';
 
 dotenv.config({ path: path.resolve(__dirname, '../../', '.env') });
 
@@ -18,7 +19,7 @@ for (let [key, value] of Object.entries(env)) {
 
 	key = key.slice(3); // remove `DB_`
 
-	if (key === 'port') {
+	if (isNumeric(value)) {
 		connectionConfig[camelCase(key)] = Number(value);
 	} else {
 		connectionConfig[camelCase(key)] = value;
@@ -59,3 +60,7 @@ export async function validateDBConnection() {
 
 export const schemaInspector = SchemaInspector(database);
 export default database;
+
+function isNumeric(num: any) {
+	return !isNaN(num);
+}
