@@ -2,7 +2,6 @@ import { Router } from 'express';
 import session from 'express-session';
 import asyncHandler from 'express-async-handler';
 import Joi from 'joi';
-import AuthenticationService from '../services/authentication';
 import grant from 'grant';
 import getGrantConfig from '../utils/get-grant-config';
 import getEmailFromProfile from '../utils/get-email-from-profile';
@@ -10,8 +9,7 @@ import { InvalidPayloadException } from '../exceptions/invalid-payload';
 import ms from 'ms';
 import cookieParser from 'cookie-parser';
 import env from '../env';
-import UsersService from '../services/users';
-import { respond } from '../middleware/respond';
+import { UsersService, AuthenticationService } from '../services';
 
 const router = Router();
 
@@ -241,7 +239,5 @@ router.get(
 		return next();
 	})
 );
-
-router.use(respond);
 
 export default router;

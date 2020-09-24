@@ -1,9 +1,8 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
-import ItemsService from '../services/items';
 import collectionExists from '../middleware/collection-exists';
-import MetaService from '../services/meta';
-import { RouteNotFoundException } from '../exceptions';
+import { ItemsService, MetaService } from '../services';
+import { RouteNotFoundException, ForbiddenException } from '../exceptions';
 
 const router = express.Router();
 
@@ -17,11 +16,20 @@ router.post(
 
 		const service = new ItemsService(req.collection, { accountability: req.accountability });
 		const primaryKey = await service.create(req.body);
-		const result = await service.readByKey(primaryKey, req.sanitizedQuery);
 
-		res.locals.payload = { data: result || null };
+		try {
+			const result = await service.readByKey(primaryKey, req.sanitizedQuery);
+			res.locals.payload = { data: result || null };
+		} catch (error) {
+			if (error instanceof ForbiddenException) {
+				return next();
+			}
+
+			throw error;
+		}
+
 		return next();
-	}),
+	})
 );
 
 router.get(
@@ -42,7 +50,7 @@ router.get(
 			data: records || null,
 		};
 		return next();
-	}),
+	})
 );
 
 router.get(
@@ -61,7 +69,7 @@ router.get(
 			data: result || null,
 		};
 		return next();
-	}),
+	})
 );
 
 router.patch(
@@ -79,10 +87,20 @@ router.patch(
 		}
 
 		const primaryKeys = await service.update(req.body);
-		const result = await service.readByKey(primaryKeys, req.sanitizedQuery);
-		res.locals.payload = { data: result || null };
+
+		try {
+			const result = await service.readByKey(primaryKeys, req.sanitizedQuery);
+			res.locals.payload = { data: result || null };
+		} catch (error) {
+			if (error instanceof ForbiddenException) {
+				return next();
+			}
+
+			throw error;
+		}
+
 		return next();
-	}),
+	})
 );
 
 router.patch(
@@ -97,11 +115,20 @@ router.patch(
 		const primaryKey = req.params.pk.includes(',') ? req.params.pk.split(',') : req.params.pk;
 
 		const updatedPrimaryKey = await service.update(req.body, primaryKey as any);
-		const result = await service.readByKey(updatedPrimaryKey, req.sanitizedQuery);
 
-		res.locals.payload = { data: result || null };
+		try {
+			const result = await service.readByKey(updatedPrimaryKey, req.sanitizedQuery);
+			res.locals.payload = { data: result || null };
+		} catch (error) {
+			if (error instanceof ForbiddenException) {
+				return next();
+			}
+
+			throw error;
+		}
+
 		return next();
-	}),
+	})
 );
 
 router.delete(
@@ -112,7 +139,7 @@ router.delete(
 		const pk = req.params.pk.includes(',') ? req.params.pk.split(',') : req.params.pk;
 		await service.delete(pk as any);
 		return next();
-	}),
+	})
 );
 
 export default router;
