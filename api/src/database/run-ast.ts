@@ -16,7 +16,7 @@ type RunASTOptions = {
 export default async function runAST(
 	originalAST: AST,
 	options?: RunASTOptions
-): Promise<Item | Item[]> {
+): Promise<null | Item | Item[]> {
 	const ast = cloneDeep(originalAST);
 
 	const query = options?.query || ast.query;
@@ -32,6 +32,8 @@ export default async function runAST(
 	const dbQuery = await getDBQuery(knex, ast.name, columnsToSelect, query, primaryKeyField);
 
 	const rawItems: Item | Item[] = await dbQuery;
+
+	if (!rawItems || (Array.isArray(rawItems) && rawItems.length === 0)) return null;
 
 	// Run the items through the special transforms
 	const payloadService = new PayloadService(ast.name, { knex });
@@ -54,8 +56,10 @@ export default async function runAST(
 
 		let nestedItems = await runAST(nestedAST, { knex, child: true });
 
-		// Merge all fetched nested records with the parent items
-		items = mergeWithParentItems(nestedItems, items, nestedAST, tempLimit);
+		if (nestedItems) {
+			// Merge all fetched nested records with the parent items
+			items = mergeWithParentItems(nestedItems, items, nestedAST, tempLimit);
+		}
 	}
 
 	// During the fetching of data, we have to inject a couple of required fields for the child nesting
