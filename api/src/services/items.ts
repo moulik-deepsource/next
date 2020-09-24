@@ -188,7 +188,7 @@ export class ItemsService implements AbstractService {
 		return Array.isArray(data) ? savedPrimaryKeys : savedPrimaryKeys[0];
 	}
 
-	async readByQuery(query: Query): Promise<Item[]> {
+	async readByQuery(query: Query): Promise<Item | Item[]> {
 		const authorizationService = new AuthorizationService({
 			accountability: this.accountability,
 		});
@@ -202,7 +202,6 @@ export class ItemsService implements AbstractService {
 		}
 
 		const records = await runAST(ast);
-
 		return records;
 	}
 
@@ -217,6 +216,10 @@ export class ItemsService implements AbstractService {
 		const schemaInspector = SchemaInspector(this.knex);
 		const primaryKeyField = await schemaInspector.primary(this.collection);
 		const keys = Array.isArray(key) ? key : [key];
+
+		if (keys.length === 1) {
+			query.single = true;
+		}
 
 		const queryWithFilter = {
 			...query,
@@ -242,8 +245,8 @@ export class ItemsService implements AbstractService {
 			ast = await authorizationService.processAST(ast, action);
 		}
 
-		const records = await runAST(ast, { knex: this.knex });
-		return Array.isArray(key) ? records : records[0];
+		const result = await runAST(ast, { knex: this.knex });
+		return result;
 	}
 
 	update(data: Partial<Item>, keys: PrimaryKey[]): Promise<PrimaryKey[]>;
@@ -466,10 +469,9 @@ export class ItemsService implements AbstractService {
 	async readSingleton(query: Query) {
 		query = clone(query);
 		const schemaInspector = SchemaInspector(this.knex);
-		query.limit = 1;
+		query.single = true;
 
-		const records = await this.readByQuery(query);
-		const record = records[0];
+		const record = await this.readByQuery(query) as Item;
 
 		if (!record) {
 			const columns = await schemaInspector.columnInfo(this.collection);
