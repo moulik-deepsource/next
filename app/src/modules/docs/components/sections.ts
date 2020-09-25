@@ -3,10 +3,12 @@ import { tags, components } from '../components/openapi-deref.json';
 export type Section = {
 	name: string;
 	to: string;
+	description?: string;
 	icon?: string;
 	sectionIcon?: string;
 	children?: Section[];
 	default?: string;
+	flat?: boolean;
 };
 
 const sections: Section[] = [
@@ -65,23 +67,23 @@ const sections: Section[] = [
 				to: '/docs/api-reference/general',
 			},
 			{
+				name: 'Dynamic Endpoints',
+				to: '/docs/api-reference/d-endpoints',
+				flat: true,
+				children: [],
+			},
+			{
 				name: 'Endpoints',
 				to: '/docs/api-reference/endpoints',
+				flat: true,
 				children: [
 					...tags.map((tag) => {
 						const id = tag.name.replace(' ', '-').toLowerCase();
-						const section: Section = { name: tag.name, to: `/docs/api-reference/endpoints/${id}` };
-						return section;
-					}),
-				],
-			},
-			{
-				name: 'Components',
-				to: '/docs/api-reference/schemas',
-				children: [
-					...Object.entries(components.schemas).map((entry) => {
-						const id = entry[0].replace(' ', '-').toLowerCase();
-						const section: Section = { name: entry[0], to: `/docs/api-reference/schemas/${id}` };
+						const section: Section = {
+							name: tag.name,
+							to: `/docs/api-reference/endpoints/${id}`,
+							description: tag.description,
+						};
 						return section;
 					}),
 				],

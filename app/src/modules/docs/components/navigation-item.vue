@@ -5,6 +5,15 @@
 			<v-list-item-title>{{ section.name }}</v-list-item-title>
 		</v-list-item-content>
 	</v-list-item>
+	<div v-else-if="section.flat === true">
+		<v-divider></v-divider>
+		<navigation-list-item
+			v-for="(childSection, index) in section.children"
+			:key="index"
+			:section="childSection"
+			dense
+		/>
+	</div>
 	<v-list-group v-else>
 		<template #activator>
 			<v-list-item-icon v-if="section.icon !== undefined"><v-icon :name="section.icon" /></v-list-item-icon>

@@ -1,59 +1,46 @@
 <template>
 	<div class="request">
-		<div class="header">
-			<v-select class="action" v-model="selectedAction" :items="actionOptions"></v-select>
-			<v-input class="url" v-model="url"></v-input>
-			<v-button @click="request" large>Send</v-button>
-		</div>
-		<v-tabs v-model="selectedTab">
-			<!-- <v-tab>Querys</v-tab> -->
-			<v-tab :disabled="hasRequestBody === false">Request Body</v-tab>
-			<v-tab :disabled="hasRequestBody === false">Request Schema</v-tab>
-			<v-tab>Response</v-tab>
-			<v-tab>Response Schema</v-tab>
-		</v-tabs>
+		<container title="REQUEST">
+			<template slot="header">
+				<div class="request-actions">
+					<v-icon name="copy"></v-icon>
+					<v-icon name="send" @click="request"></v-icon>
+				</div>
+			</template>
+			{{ action.toUpperCase() }} {{ url }}
+		</container>
 
-		<v-tabs-items v-model="selectedTab">
-			<!-- <v-tab-item>
-                <div class="from">
-                    <div v-for="(query, i) in querys" :key="i">
-                        
-                    </div>
-                </div>
-            </v-tab-item> -->
-			<v-tab-item>
-				<interface-code v-model="requestBody" type="json" />
-			</v-tab-item>
-			<v-tab-item class="schema">
-				<schema-component
-					v-if="hasRequestBody"
-					:schema="operation.requestBody.content['application/json'].schema"
-				/>
-			</v-tab-item>
-			<v-tab-item>
-				<interface-code v-model="response" type="json" />
-				<div class="response-status" v-if="responseStatus">
-					<span class="status" :class="{ success: [200, 202, 203].includes(responseStatus.status) }">
-						{{ responseStatus.status }}
-					</span>
-					<span class="text">{{ responseStatus.statusText }}</span>
-				</div>
-			</v-tab-item>
-			<v-tab-item class="schema">
-				<div v-for="(response, status, i) in operation.responses" :key="i">
-					<div class="title">
-						<span class="status" :class="{ success: [200, 202, 203].includes(Number(status)) }">
-							{{ status }}
-						</span>
-						<span class="description">{{ response.description }}</span>
-					</div>
-					<schema-component
-						v-if="response && response.content && response.content['application/json']"
-						:schema="response.content['application/json'].schema"
-					/>
-				</div>
-			</v-tab-item>
-		</v-tabs-items>
+		<template v-if="hasRequestBody">
+			<container title="REQUEST BODY">
+				<template slot="header">
+					<v-icon name="code" @click="requestBodySchema = true"></v-icon>
+				</template>
+				An example request body
+			</container>
+
+			<v-modal v-model="requestBodySchema" title="Request Body">
+				<schema :schema="operation.requestBody.content['application/json'].schema" />
+
+				<template #footer>
+					<v-button secondary @click="requestBodySchema = false">Close</v-button>
+				</template>
+			</v-modal>
+		</template>
+
+		<container title="RESPONSE">
+			<template slot="header">
+				<v-icon name="code" @click="responseSchema = true"></v-icon>
+			</template>
+			{ "Some example": "ww" }
+		</container>
+
+		<v-modal v-model="responseSchema" title="Response">
+			<response v-for="(response, status, i) in operation.responses" :key="i" :data="response" :status="status" />
+
+			<template #footer>
+				<v-button secondary @click="responseSchema = false">Close</v-button>
+			</template>
+		</v-modal>
 	</div>
 </template>
 
@@ -61,11 +48,11 @@
 import { defineComponent, PropType, computed, ref, watch } from '@vue/composition-api';
 import { OperationObject, ParameterObject, ResponseObject } from 'openapi3-ts';
 import { PathItemKeys } from '../endpoints.vue';
-import SchemaComponent from './schema.vue';
 import api from '@/api';
+import Container from './container.vue';
 
 export default defineComponent({
-	components: { SchemaComponent },
+	components: { Container },
 	props: {
 		operation: {
 			type: Object as PropType<OperationObject>,
@@ -86,11 +73,8 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-		const selectedAction = ref<string | null>(props.action.toUpperCase());
-		watch(
-			() => props.action,
-			(val) => (selectedAction.value = val.toUpperCase())
-		);
+		const requestBodySchema = ref(false);
+		const responseSchema = ref(false);
 
 		const url = ref<string | null>(props.path);
 		watch(
@@ -106,7 +90,6 @@ export default defineComponent({
 			}
 		);
 
-		const selectedTab = ref([2]);
 		const response = ref<Record<string, any> | null>(null);
 		const responseStatus = ref<{ status: number; statusText: string } | null>(null);
 		const requestBody = ref<Record<string, any> | null>(null);
@@ -120,31 +103,25 @@ export default defineComponent({
 
 		const querys = computed(() => props.parameter.filter((p) => p.in === 'query'));
 
-		const actionOptions = computed(() => {
-			return Object.keys(PathItemKeys);
-		});
-
 		return {
-			selectedAction,
-			actionOptions,
 			url,
-			selectedTab,
 			querys,
 			hasRequestBody,
 			request,
 			response,
 			requestBody,
 			responseStatus,
+			requestBodySchema,
+			responseSchema,
 		};
 
 		async function request() {
-			if (url.value === null || selectedAction.value === null) return;
+			if (url.value === null || props.action === null) return;
 
-			selectedTab.value = [2];
 			let request;
 
 			try {
-				switch (selectedAction.value) {
+				switch (props.action) {
 					case 'GET':
 						request = await api.get(url.value);
 						break;
@@ -178,56 +155,8 @@ export default defineComponent({
 @import '@/styles/mixins/form-grid.scss';
 
 .request {
-	.header {
-		display: flex;
-		.action {
-			display: block;
-			width: 200px;
-			margin-right: 20px;
-		}
-
-		.url {
-			margin-right: 20px;
-		}
-	}
-
-	.response-status {
-		padding: 8px;
-		.status {
-			display: inline-block;
-			margin-right: 8px;
-			padding: 4px 8px;
-			color: var(--foreground-inverted);
-			background-color: var(--danger);
-			border-radius: var(--border-radius);
-
-			&.success {
-				background-color: var(--primary);
-			}
-		}
-	}
-
-	.schema {
-		padding: 10px 20px;
-		background-color: var(--background-subdued);
-
-		.title {
-			margin: 10px 0 20px 0;
-			font-size: 20px;
-
-			.status {
-				display: inline-block;
-				margin-right: 12px;
-				padding: 4px 8px;
-				color: var(--foreground-inverted);
-				background-color: var(--danger);
-				border-radius: var(--border-radius);
-
-				&.success {
-					background-color: var(--primary);
-				}
-			}
-		}
+	.container {
+		margin-bottom: 16px;
 	}
 }
 </style>

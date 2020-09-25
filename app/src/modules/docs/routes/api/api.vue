@@ -18,6 +18,7 @@ import { Section } from '../../components/sections';
 import General from './general.vue';
 import Schemas from './schemas.vue';
 import Endpoints from './endpoints.vue';
+import './components';
 
 export default defineComponent({
 	components: { DocsNavigation, General, Endpoints, Schemas },

@@ -1,48 +1,35 @@
 <template>
 	<div class="endpoints">
-		<h1>{{ section.name }}</h1>
-		<h2>All endpoints</h2>
-		<table class="paths">
-			<tr>
-				<th>Action</th>
-				<th>Path</th>
-				<th>Description</th>
-			</tr>
-			<a v-for="(data, index) in schema" :key="index" :href="`#${data.action + data.path}`">
-				<td class="action">
-					<div :class="{ [data.action]: true }">{{ data.action.toUpperCase() }}</div>
-				</td>
-				<td class="path" nowrap>{{ data.path }}</td>
-				<td class="description">{{ data.operation.description }}</td>
-			</a>
-		</table>
+		<div class="general">
+			<h1>{{ section.name }}</h1>
+			<div class="subtitle" v-if="section.description">{{ section.description }}</div>
+			<h2>Endpoints</h2>
+			<table class="paths">
+				<tr>
+					<th>Path</th>
+					<th>Description</th>
+				</tr>
+				<a v-for="(data, index) in schema" :key="index" :href="`#${data.action + data.path}`">
+					<td class="path" nowrap>
+						<span class="action" :class="{ [data.action]: true }">{{ data.action.toUpperCase() }}</span>
+						{{ data.path }}
+					</td>
+					<td class="description">{{ data.operation.description }}</td>
+				</a>
+			</table>
+		</div>
 
-		<div class="endpoint">
-			<div class="endpoint-item" v-for="(data, index) in schema" :key="index" :id="data.action + data.path">
+		<template v-for="(data, index) in schema">
+			<div class="endpoint-info" :key="index" :id="data.action + data.path">
 				<div class="title">
 					<div class="action" :class="{ [data.action]: true }">{{ data.action.toUpperCase() }}</div>
 					<span class="path">{{ data.path }}</span>
 				</div>
-				<table v-if="data.parameters" class="parameters">
-					<tr>
-						<th>Name</th>
-						<th>Type</th>
-						<th>Schema</th>
-						<th>Description</th>
-					</tr>
-					<tr class="parameter" v-for="(param, i) in data.parameters" :key="i">
-						<td
-							class="name"
-							:class="{ required: param.required }"
-							v-tooltip.left="param.required ? 'This is required' : null"
-						>
-							{{ param.name }}
-						</td>
-						<td class="in">{{ param.in }}</td>
-						<td><schema-component :schema="param.schema" /></td>
-						<td class="description">{{ param.description }}</td>
-					</tr>
-				</table>
+				<span class="description">{{ data.operation.description }}</span>
+				<h3>Parameters</h3>
+				<parameter v-for="(parameter, i) in data.parameters" :key="i" :data="parameter" />
+			</div>
+			<div class="request-container" :key="index + 'request'">
 				<request-component
 					:action="data.action"
 					:operation="data.operation"
@@ -50,13 +37,13 @@
 					:parameter="data.parameter"
 				/>
 			</div>
-		</div>
+		</template>
 	</div>
 </template>
 
 <script lang="ts">
 import { defineComponent, computed, PropType } from '@vue/composition-api';
-import openapi from '../../components/openapi-deref.json';
+import openapi from '../../components/openapi.json';
 import { Section } from '../../components/sections';
 import RequestComponent from './components/request.vue';
 import SchemaComponent from './components/schema.vue';
@@ -135,8 +122,14 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 h1 {
-	margin: 16px 0 32px 0;
+	margin: 16px 0 16px 0;
 	font-size: 24px;
+}
+
+.subtitle {
+	max-width: 750px;
+	margin-bottom: 32px;
+	font-size: 16px;
 }
 
 h2 {
@@ -144,32 +137,49 @@ h2 {
 	font-size: 20px;
 }
 
+h3 {
+	margin: 16px 0;
+	font-size: 20px;
+}
+
 .action {
 	.get,
 	&.get {
+		color: var(--success);
 		background-color: var(--success);
 	}
 	.post,
 	&.post {
+		color: var(--primary);
 		background-color: var(--primary);
 	}
 	.patch,
 	&.patch {
+		color: var(--warning);
 		background-color: var(--warning);
 	}
 	.delete,
 	&.delete {
+		color: var(--danger);
 		background-color: var(--danger);
 	}
 }
 
 .endpoints {
+	display: grid;
+	grid-template-columns: 1fr 350px;
+
+	.general {
+		grid-column: span 2;
+	}
+
 	.paths {
 		margin-bottom: 40px;
 		border-spacing: 0;
 
 		a {
 			display: table-row;
+			overflow: hidden;
 			border-radius: var(--border-radius);
 			cursor: pointer;
 			&:hover {
@@ -184,17 +194,14 @@ h2 {
 
 		td {
 			padding: 8px;
+			text-overflow: ellipsis;
 		}
 
 		.action {
-			text-align: end;
-		}
-
-		.action div {
-			display: inline-block;
 			width: min-content;
-			padding: 0 8px;
-			color: var(--foreground-inverted);
+			margin-right: 4px;
+			font-weight: 600;
+			background-color: unset;
 			border-radius: var(--border-radius);
 		}
 
@@ -207,7 +214,9 @@ h2 {
 		}
 	}
 
-	.endpoint-item {
+	.endpoint-info {
+		padding-right: 32px;
+
 		.title {
 			display: flex;
 			align-items: center;
@@ -225,49 +234,16 @@ h2 {
 				margin-right: 20px;
 			}
 		}
-
-		.parameters {
-			border-spacing: 0;
-
-			th {
-				padding: 0 8px;
-				color: var(--foreground-subdued);
-				text-align: start;
-			}
-
-			td {
-				vertical-align: top;
-			}
-
-			.parameter {
-				font-size: 16px;
-
-				td {
-					padding: 4px 8px;
-				}
-
-				.name.required::after {
-					color: var(--primary);
-					content: '*';
-				}
-
-				.in {
-					color: var(--foreground-subdued);
-				}
-
-				.schema {
-					max-width: 200px;
-				}
-
-				.description {
-					font-size: 14px;
-				}
-			}
-		}
 	}
 
-	.request {
-		margin: 40px 0;
+	.request-container {
+		position: relative;
+
+		.request {
+			position: sticky;
+			top: 104px;
+			margin: 40px 0;
+		}
 	}
 }
 </style>
