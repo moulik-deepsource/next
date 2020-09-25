@@ -19,6 +19,21 @@
 			</table>
 		</div>
 
+		<template v-for="(reference, index) in objects">
+			<div :key="index + 'object'">
+				<h2>The {{ reference.name }} Object</h2>
+				<schema :data="reference.schema" />
+			</div>
+			<div class="container" :key="index + 'example-object'">
+				<container class="example" title="EXAMPLE">
+					<template #header>
+						<v-icon name="copy" />
+					</template>
+					<example :data="reference.schema" />
+				</container>
+			</div>
+		</template>
+
 		<template v-for="(data, index) in schema">
 			<div class="endpoint-info" :key="index" :id="data.action + data.path">
 				<div class="title">
@@ -29,7 +44,7 @@
 				<h3>Parameters</h3>
 				<parameter v-for="(parameter, i) in data.parameters" :key="i" :data="parameter" />
 			</div>
-			<div class="request-container" :key="index + 'request'">
+			<div class="container" :key="index + 'request'">
 				<request-component
 					:action="data.action"
 					:operation="data.operation"
@@ -46,8 +61,10 @@ import { defineComponent, computed, PropType } from '@vue/composition-api';
 import openapi from '../../components/openapi.json';
 import { Section } from '../../components/sections';
 import RequestComponent from './components/request.vue';
-import SchemaComponent from './components/schema.vue';
-import { PathItemObject, OperationObject, ParameterObject, ReferenceObject } from 'openapi3-ts';
+import Schema from './components/schema.vue';
+import { getReference, getReferenceSections } from './components/reference.vue';
+import Container from './components/container.vue';
+import { PathItemObject, OperationObject, ParameterObject, ReferenceObject, ResponseObject } from 'openapi3-ts';
 
 export enum PathItemKeys {
 	GET = 'get',
@@ -68,7 +85,7 @@ interface Data {
 }
 
 export default defineComponent({
-	components: { RequestComponent, SchemaComponent },
+	components: { RequestComponent, Schema, Container },
 	props: {
 		section: {
 			type: Object as PropType<Section>,
@@ -115,7 +132,46 @@ export default defineComponent({
 			return schema;
 		});
 
-		return { schema };
+		const objects = computed(() => {
+			const references: Set<string> = new Set();
+			schema.value.forEach((data) => {
+				Object.entries(data.operation.responses).forEach(
+					([status, response]: [string, ResponseObject | ReferenceObject]) => {
+						if ([200, 203].includes(Number(status)) === false) return;
+						const ref = findRef(response);
+						if (ref !== null && ref.startsWith('#/components/schemas/')) {
+							references.add(ref);
+						}
+					}
+				);
+			});
+
+			return [...references]
+				.map((ref) => {
+					const sections = getReferenceSections(ref);
+					if (sections === undefined) return;
+					return {
+						name: sections[1],
+						schema: getReference(ref),
+						ref,
+					};
+				})
+				.filter((ref) => ref);
+		});
+
+		return { schema, objects };
+
+		function findRef(obj: Record<string, any>): string | null {
+			if ('$ref' in obj) return obj['$ref'];
+			let $ref: string | null = null;
+			Object.values(obj).forEach((val) => {
+				if (typeof val === 'object') {
+					const ref = findRef(val);
+					if (ref !== null && $ref === null) $ref = ref;
+				}
+			});
+			return $ref;
+		}
 	},
 });
 </script>
@@ -236,14 +292,20 @@ h3 {
 		}
 	}
 
-	.request-container {
+	.container {
 		position: relative;
 
-		.request {
+		.request,
+		.container {
 			position: sticky;
 			top: 104px;
 			margin: 40px 0;
 		}
+	}
+
+	.example {
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
 </style>

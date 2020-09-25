@@ -1,29 +1,31 @@
 <template>
-	<container name="EXAMPLE">
-		<div class="example">
-			{{ example }}
-		</div>
-	</container>
+	<pre class="example">{{ example }}</pre>
 </template>
 
 <script lang="ts">
 import { defineComponent, computed, PropType } from '@vue/composition-api';
-import { SchemaObject, SchemasObject } from 'openapi3-ts';
+import { ReferenceObject, SchemaObject, SchemasObject } from 'openapi3-ts';
 import Container from './container.vue';
+import { getReference } from './reference.vue';
 
 export default defineComponent({
 	components: { Container },
 	props: {
 		data: {
-			type: Object as PropType<SchemaObject>,
+			type: Object as PropType<SchemaObject | ReferenceObject>,
 			default: null,
 		},
 	},
 	setup(props) {
 		const example = computed(() => {
-			if (props.data.value === undefined) return;
-			const schemas = props.data.value[1].properties as SchemasObject;
-			const examples = filterExamples(schemas);
+			if (props.data === undefined) return;
+			let schemas = props.data;
+			if (schemas === undefined) return;
+			if ('$ref' in schemas) {
+				schemas = getReference(schemas.$ref) as SchemaObject;
+			}
+			if (schemas.properties === undefined) return;
+			const examples = filterExamples(schemas.properties);
 			return JSON.stringify(examples, null, 4);
 		});
 

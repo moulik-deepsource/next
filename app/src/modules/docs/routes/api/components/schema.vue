@@ -10,7 +10,7 @@
 					<table v-if="type.properties" class="properties">
 						<tr v-for="(val, key) in type.properties" :key="key">
 							<td v-if="key" class="name">{{ key }}</td>
-							<td><schema :data="val" :name="key"></schema></td>
+							<td><schema :data="val"></schema></td>
 						</tr>
 					</table>
 					<span v-if="type.required">
@@ -147,9 +147,6 @@ export default defineComponent({
 	display: flex;
 	& * {
 		user-select: text;
-	}
-	.name {
-		margin-right: 8px;
 	}
 
 	.type-filter {
