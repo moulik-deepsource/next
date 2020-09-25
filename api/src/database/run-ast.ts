@@ -33,11 +33,13 @@ export default async function runAST(
 
 	const rawItems: Item | Item[] = await dbQuery;
 
-	if (!rawItems || (Array.isArray(rawItems) && rawItems.length === 0)) return null;
+	if (!rawItems) return null;
 
 	// Run the items through the special transforms
 	const payloadService = new PayloadService(ast.name, { knex });
 	let items = await payloadService.processValues('read', rawItems);
+
+	if (!items || items.length === 0) return items;
 
 	// Apply the `_in` filters to the nested collection batches
 	const nestedASTs = applyParentFilters(nestedCollectionASTs, items);
@@ -127,7 +129,7 @@ async function getDBQuery(
 	query: Query,
 	primaryKeyField: string
 ): Promise<QueryBuilder> {
-	let dbQuery = knex.select(columns).from(table);
+	let dbQuery = knex.select(columns.map((column) => `${table}.${column}`)).from(table);
 
 	const queryCopy = clone(query);
 
@@ -140,6 +142,7 @@ async function getDBQuery(
 	query.sort = query.sort || [{ column: primaryKeyField, order: 'asc' }];
 
 	await applyQuery(table, dbQuery, queryCopy);
+
 	return dbQuery;
 }
 
@@ -201,21 +204,25 @@ function mergeWithParentItems(
 
 	if (isM2O(nestedAST)) {
 		for (const parentItem of parentItems) {
-			const itemChildren = nestedItems.filter((nestedItem) => {
+			const itemChild = nestedItems.find((nestedItem) => {
 				return (
 					nestedItem[nestedAST.relation.one_primary] === parentItem[nestedAST.fieldKey]
 				);
 			});
 
-			parentItem[nestedAST.fieldKey] = itemChildren;
+			parentItem[nestedAST.fieldKey] = itemChild || null;
 		}
 	} else {
 		for (const parentItem of parentItems) {
 			let itemChildren = nestedItems.filter((nestedItem) => {
+				if (nestedItem === null) return false;
 				if (Array.isArray(nestedItem[nestedAST.relation.many_field])) return true;
+
 				return (
 					nestedItem[nestedAST.relation.many_field] ===
-					parentItem[nestedAST.relation.one_primary]
+						parentItem[nestedAST.relation.one_primary] ||
+					nestedItem[nestedAST.relation.many_field]?.[nestedAST.relation.many_primary] ===
+						parentItem[nestedAST.relation.one_primary]
 				);
 			});
 
@@ -251,15 +258,11 @@ function removeTemporaryFields(
 		const item = fields.includes('*') ? rawItem : pick(rawItem, fields);
 
 		for (const nestedCollection of nestedCollections) {
-			item[nestedCollection.fieldKey] = removeTemporaryFields(
-				Array.isArray(rawItem[nestedCollection.fieldKey])
-					? rawItem[nestedCollection.fieldKey]
-					: [rawItem[nestedCollection.fieldKey]],
-				nestedCollection
-			);
-
-			if (isM2O(nestedCollection)) {
-				item[nestedCollection.fieldKey] = item[nestedCollection.fieldKey][0] || null;
+			if (item[nestedCollection.fieldKey] !== null) {
+				item[nestedCollection.fieldKey] = removeTemporaryFields(
+					rawItem[nestedCollection.fieldKey],
+					nestedCollection
+				);
 			}
 		}
 
