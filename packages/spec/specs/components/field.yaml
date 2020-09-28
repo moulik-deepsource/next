@@ -1,4 +1,5 @@
 type: object
+x-tag: Fields
 properties:
   id:
     description: Unique identifier for the field in the `directus_fields` collection.

@@ -1,22 +1,32 @@
 <template>
-	<reference v-if="isReference" :reference="data.$ref" />
-	<div v-else class="schema">
+	<div class="schema">
+		<div class="title" v-if="name !== null">
+			<span class="name">{{ name }}</span>
+			<span class="required" :class="{ [required ? 'true' : 'false']: true }">
+				{{ required ? 'REQUIRED' : 'OPTIONAL' }}
+			</span>
+		</div>
 		<div v-if="typeFiler" class="type-filter">{{ typeFiler }}</div>
 		<ul class="types">
 			<li class="type" v-for="(type, index) in types" :key="index">
-				<span class="data-type">{{ type.type }}</span>
+				<span class="data-type" v-if="type.type">{{ type.type }}</span>
 
-				<template v-if="type.type === 'object'">
-					<table v-if="type.properties" class="properties">
-						<tr v-for="(val, key) in type.properties" :key="key">
-							<td v-if="key" class="name">{{ key }}</td>
-							<td><schema :data="val"></schema></td>
-						</tr>
-					</table>
-					<span v-if="type.required">
-						<br />
-						required: {{ type.required.join(', ') }}
-					</span>
+				<template v-if="'$ref' in type">
+					<router-link class="object-link" :to="refToLink(type.$ref)">
+						{{ type.$ref.split('/').pop() }}
+					</router-link>
+				</template>
+
+				<template v-else-if="type.type === 'object'">
+					<div v-if="type.properties" class="properties">
+						<schema
+							v-for="(val, key) in type.properties"
+							:key="key"
+							:data="val"
+							:name="key"
+							:required="type.required && type.required.includes(key)"
+						></schema>
+					</div>
 					<span v-if="type.minProperties">
 						<br />
 						min properties: {{ type.minProperties }}
@@ -28,12 +38,10 @@
 				</template>
 
 				<template v-else-if="type.type === 'array'">
-					<table>
-						<tr>
-							<td class="name">items:</td>
-							<td><schema :data="type.items" name="items"></schema></td>
-						</tr>
-					</table>
+					<div class="items">
+						<span>items:</span>
+						<schema :data="type.items" name="items"></schema>
+					</div>
 					<span v-if="type.minItems">
 						<br />
 						min size: {{ type.minItems }}
@@ -85,10 +93,10 @@
 					<br />
 					nullable
 				</span>
-				<span v-if="type.example" class="example">
+				<!-- <span v-if="type.example" class="example">
 					<br />
 					example: {{ type.example }}
-				</span>
+				</span> -->
 			</li>
 		</ul>
 	</div>
@@ -97,6 +105,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, PropType } from '@vue/composition-api';
 import { SchemaObject, ReferenceObject } from 'openapi3-ts';
+import { getReference, getReferenceSections } from './reference';
 
 export default defineComponent({
 	name: 'schema',
@@ -104,6 +113,10 @@ export default defineComponent({
 		name: {
 			type: String,
 			default: null,
+		},
+		required: {
+			type: Boolean,
+			default: false,
 		},
 		data: {
 			type: Object as PropType<SchemaObject | ReferenceObject>,
@@ -113,11 +126,8 @@ export default defineComponent({
 	setup(props) {
 		const typeFiler = ref<'oneOf' | 'anyOf' | 'allOf' | null>(null);
 
-		const isReference = computed(() => props.data !== null && '$ref' in props.data);
-
 		const types = computed(() => {
 			const types: SchemaObject[] = [];
-			if (isReference.value) return;
 			const schema = props.data as SchemaObject;
 
 			if (schema.type !== undefined) {
@@ -132,19 +142,34 @@ export default defineComponent({
 			} else if (schema.allOf) {
 				typeFiler.value = 'allOf';
 				types.push(...schema.allOf);
+			} else if (props.data.$ref !== undefined) {
+				typeFiler.value = null;
+				types.push(schema);
 			}
 
 			return types;
 		});
 
-		return { types, typeFiler, isReference };
+		return { types, typeFiler, refToLink };
+
+		function refToLink(ref: string) {
+			const sections = getReferenceSections(ref);
+			const schema = getReference(ref) as { 'x-tag': string } | undefined;
+			if (sections !== undefined && schema !== undefined && 'x-tag' in schema) {
+				const tag = schema['x-tag'].replaceAll(' ', '-').toLowerCase();
+				return `/docs/api-reference/endpoints/${tag}#object-${sections[1]}`;
+			}
+			return null;
+		}
 	},
 });
 </script>
 
 <style lang="scss" scoped>
 .schema {
-	display: flex;
+	padding: 16px 0;
+	border-top: 2px solid var(--border-subdued);
+
 	& * {
 		user-select: text;
 	}
@@ -159,6 +184,29 @@ export default defineComponent({
 		list-style-type: none;
 	}
 
+	.title {
+		.name {
+			color: var(--foreground-normal);
+			font-weight: bold;
+			font-size: 16px;
+			font-family: monospace;
+		}
+
+		.required {
+			display: inline-block;
+			margin: 0px 8px;
+			font-size: 12px;
+
+			&.true {
+				color: var(--warning);
+			}
+
+			&.false {
+				color: var(--foreground-subdued);
+			}
+		}
+	}
+
 	.types {
 		overflow: hidden;
 		.type {
@@ -168,18 +216,9 @@ export default defineComponent({
 		}
 	}
 
-	.type table {
-		tr {
-			td {
-				padding: 4px 0;
-				vertical-align: top;
-
-				&.name {
-					padding-right: 12px;
-					font-size: 16px;
-				}
-			}
-		}
+	.properties,
+	.items {
+		padding-left: 20px;
 	}
 
 	span {
@@ -196,6 +235,10 @@ export default defineComponent({
 		&.pattern {
 			word-break: break-all;
 		}
+	}
+
+	.object-link {
+		color: var(--primary);
 	}
 }
 </style>

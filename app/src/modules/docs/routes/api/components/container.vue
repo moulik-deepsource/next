@@ -35,6 +35,10 @@ export default defineComponent({
 		color: var(--foreground-subdued);
 		background-color: var(--background-subdued);
 		border-bottom: 2px solid var(--border-subdued);
+
+		.title {
+			margin-right: 8px;
+		}
 	}
 
 	.body {

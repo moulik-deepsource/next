@@ -3,44 +3,44 @@
 		<container title="REQUEST">
 			<template slot="header">
 				<div class="request-actions">
-					<v-icon name="copy"></v-icon>
+					<v-icon name="copy" @click="copy(action.toUpperCase() + ' ' + url)"></v-icon>
 					<v-icon name="send" @click="request"></v-icon>
 				</div>
 			</template>
-			{{ action.toUpperCase() }} {{ url }}
+			<span>{{ action.toUpperCase() }}</span>
+			<span contenteditable v-once v-html="url" @input="url = $event.target.innerHTML"></span>
 		</container>
 
-		<template v-if="hasRequestBody">
+		<template v-if="requestBody !== null">
 			<container title="REQUEST BODY">
 				<template slot="header">
-					<v-icon name="code" @click="requestBodySchema = true"></v-icon>
+					<v-icon name="copy" @click="copy(requestBody)"></v-icon>
 				</template>
-				An example request body
+				<pre
+					class="example"
+					v-once
+					@input="requestBody = $event.target.innerHTML"
+					contenteditable
+					v-html="requestBody"
+				></pre>
 			</container>
-
-			<v-modal v-model="requestBodySchema" title="Request Body">
-				<schema :schema="operation.requestBody.content['application/json'].schema" />
-
-				<template #footer>
-					<v-button secondary @click="requestBodySchema = false">Close</v-button>
-				</template>
-			</v-modal>
 		</template>
 
 		<container title="RESPONSE">
 			<template slot="header">
-				<v-icon name="code" @click="responseSchema = true"></v-icon>
+				<div class="response-header">
+					<v-icon name="copy" @click="copy(response)"></v-icon>
+					<span
+						class="response-status"
+						:class="{ success: [200, 203].includes(Number(responseStatus.status)) }"
+						v-if="responseStatus"
+					>
+						{{ responseStatus.status }} {{ responseStatus.statusText }}
+					</span>
+				</div>
 			</template>
-			{ "Some example": "ww" }
+			<pre class="example">{{ response }}</pre>
 		</container>
-
-		<v-modal v-model="responseSchema" title="Response">
-			<response v-for="(response, status, i) in operation.responses" :key="i" :data="response" :status="status" />
-
-			<template #footer>
-				<v-button secondary @click="responseSchema = false">Close</v-button>
-			</template>
-		</v-modal>
 	</div>
 </template>
 
@@ -50,6 +50,8 @@ import { OperationObject, ParameterObject, ResponseObject } from 'openapi3-ts';
 import { PathItemKeys } from '../endpoints.vue';
 import api from '@/api';
 import Container from './container.vue';
+import { getExamplesString } from './example';
+import { dereference } from './reference';
 
 export default defineComponent({
 	components: { Container },
@@ -73,9 +75,6 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-		const requestBodySchema = ref(false);
-		const responseSchema = ref(false);
-
 		const url = ref<string | null>(props.path);
 		watch(
 			() => props.path,
@@ -85,35 +84,71 @@ export default defineComponent({
 		watch(
 			() => props.operation,
 			(val) => {
-				response.value = null;
-				(responseStatus.value = null), (requestBody.value = null);
+				_response.value = null;
+				responseStatus.value = null;
+				_requestBody.value = null;
 			}
 		);
 
-		const response = ref<Record<string, any> | null>(null);
+		const _response = ref<Record<string, any> | null>(null);
 		const responseStatus = ref<{ status: number; statusText: string } | null>(null);
-		const requestBody = ref<Record<string, any> | null>(null);
+		const _requestBody = ref<Record<string, any> | null>(null);
 
-		const hasRequestBody = computed(
-			() =>
-				props.operation.requestBody !== undefined &&
-				'content' in props.operation.requestBody &&
-				'application/json' in props.operation.requestBody.content
-		);
+		const response = computed(() => {
+			if (_response.value !== null) return _response.value;
+			if (
+				'200' in props.operation.responses &&
+				props.operation.responses['200'].content &&
+				'application/json' in props.operation.responses['200'].content
+			) {
+				const schema = props.operation.responses['200'].content['application/json'].schema;
+				return getExamplesString(dereference(schema));
+			}
+			return null;
+		});
+
+		const requestBody = computed({
+			get() {
+				if (_requestBody.value !== null) return JSON.stringify(_requestBody.value, null, 4);
+
+				if (
+					props.operation.requestBody &&
+					'content' in props.operation.requestBody &&
+					'application/json' in props.operation.requestBody.content &&
+					props.operation.requestBody.content['application/json'].schema
+				) {
+					const schema = props.operation.requestBody.content['application/json'].schema;
+					return getExamplesString(schema);
+				}
+				return null;
+			},
+			set(val: string | null) {
+				if (val === null) return;
+				_requestBody.value = JSON.parse(val);
+			},
+		});
 
 		const querys = computed(() => props.parameter.filter((p) => p.in === 'query'));
 
 		return {
 			url,
 			querys,
-			hasRequestBody,
 			request,
 			response,
 			requestBody,
 			responseStatus,
-			requestBodySchema,
-			responseSchema,
+			getExamplesString,
+			copy,
 		};
+
+		function copy(str: string) {
+			const el = document.createElement('textarea');
+			el.value = str;
+			document.body.appendChild(el);
+			el.select();
+			document.execCommand('copy');
+			document.body.removeChild(el);
+		}
 
 		async function request() {
 			if (url.value === null || props.action === null) return;
@@ -122,16 +157,16 @@ export default defineComponent({
 
 			try {
 				switch (props.action) {
-					case 'GET':
+					case 'get':
 						request = await api.get(url.value);
 						break;
-					case 'POST':
+					case 'post':
 						request = await api.post(url.value, requestBody.value);
 						break;
-					case 'PATCH':
+					case 'patch':
 						request = await api.patch(url.value, requestBody.value);
 						break;
-					case 'DELETE':
+					case 'delete':
 						request = await api.delete(url.value);
 						break;
 					default:
@@ -144,7 +179,7 @@ export default defineComponent({
 			}
 			if (request === undefined) return;
 
-			if (request.data) response.value = request.data;
+			if (request.data) _response.value = request.data;
 			if (request.status) responseStatus.value = { status: request.status, statusText: request.statusText };
 		}
 	},
@@ -157,6 +192,30 @@ export default defineComponent({
 .request {
 	.container {
 		margin-bottom: 16px;
+	}
+}
+
+.example {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.response-header {
+	display: flex;
+	flex: 1;
+	flex-direction: row-reverse;
+	align-items: center;
+	justify-content: space-between;
+
+	.response-status {
+		display: inline-block;
+		padding: 0 4px;
+		color: var(--foreground-inverted);
+		background-color: var(--danger);
+		border-radius: var(--border-radius);
+
+		&.success {
+			background-color: var(--primary);
+		}
 	}
 }
 </style>

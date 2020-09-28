@@ -1,4 +1,5 @@
 type: object
+x-tag: Collections
 properties:
   collection:
     description: The collection name.

@@ -20,16 +20,23 @@
 		</div>
 
 		<template v-for="(reference, index) in objects">
-			<div :key="index + 'object'">
+			<div :key="index + 'object'" :id="`object-${reference.name}`" class="endpoint-info">
 				<h2>The {{ reference.name }} Object</h2>
-				<schema :data="reference.schema" />
+				<div v-if="reference.description" class="description">{{ reference.description }}</div>
+				<div class="properties" v-for="(prop, name, i) in reference.schema.properties" :key="i">
+					<schema
+						:data="prop"
+						:name="name"
+						:required="reference.schema.required && reference.schema.required.includes(name)"
+					/>
+				</div>
 			</div>
 			<div class="container" :key="index + 'example-object'">
 				<container class="example" title="EXAMPLE">
 					<template #header>
 						<v-icon name="copy" />
 					</template>
-					<example :data="reference.schema" />
+					<pre class="example" v-html="getExamplesString(reference.schema)" />
 				</container>
 			</div>
 		</template>
@@ -41,9 +48,23 @@
 					<span class="path">{{ data.path }}</span>
 				</div>
 				<span class="description">{{ data.operation.description }}</span>
-				<h3>Parameters</h3>
-				<parameter v-for="(parameter, i) in data.parameters" :key="i" :data="parameter" />
+				<template v-if="data.parameters">
+					<h3>Parameters</h3>
+					<parameter v-for="(parameter, i) in data.parameters" :key="i" :data="parameter" />
+				</template>
+
+				<template v-if="data.attributes">
+					<h3>Attributes</h3>
+					<schema
+						v-for="data in data.attributes"
+						:key="data.name"
+						:data="data.schema"
+						:required="data.required"
+						:name="data.name"
+					/>
+				</template>
 			</div>
+
 			<div class="container" :key="index + 'request'">
 				<request-component
 					:action="data.action"
@@ -61,10 +82,18 @@ import { defineComponent, computed, PropType } from '@vue/composition-api';
 import openapi from '../../components/openapi.json';
 import { Section } from '../../components/sections';
 import RequestComponent from './components/request.vue';
+import { getExamplesString } from './components/example';
 import Schema from './components/schema.vue';
-import { getReference, getReferenceSections } from './components/reference.vue';
+import { getReference, getReferenceSections } from './components/reference';
 import Container from './components/container.vue';
-import { PathItemObject, OperationObject, ParameterObject, ReferenceObject, ResponseObject } from 'openapi3-ts';
+import {
+	PathItemObject,
+	OperationObject,
+	ParameterObject,
+	ReferenceObject,
+	ResponseObject,
+	SchemaObject,
+} from 'openapi3-ts';
 
 export enum PathItemKeys {
 	GET = 'get',
@@ -82,6 +111,11 @@ interface Data {
 	action: PathItemKeys;
 	operation: OperationObject;
 	parameters?: ParameterObject[];
+	attributes?: {
+		name: string;
+		required: boolean;
+		schema: SchemaObject;
+	}[];
 }
 
 export default defineComponent({
@@ -106,15 +140,10 @@ export default defineComponent({
 					if (Object.keys(PathItemKeys).includes(operationKey.toUpperCase()) === false) return;
 
 					if (operation.tags && operation.tags.includes(props.section.name)) {
-						const parameters: ParameterObject[] = [];
+						const parameters: (ParameterObject | ReferenceObject)[] = [];
 
-						if (value.parameters) {
-							parameters.push(...(value.parameters as ParameterObject[]));
-						}
-
-						if (operation.parameters) {
-							parameters.push(...(operation.parameters as ParameterObject[]));
-						}
+						if (value.parameters) parameters.push(...value.parameters);
+						if (operation.parameters) parameters.push(...operation.parameters);
 
 						const data: Data = {
 							path: key,
@@ -122,7 +151,30 @@ export default defineComponent({
 							operation,
 						};
 
-						if (parameters !== undefined && parameters.length > 0) data.parameters = parameters;
+						if (parameters.length > 0) {
+							data.parameters = parameters.map((param) =>
+								'$ref' in param ? (getReference(param.$ref) as ParameterObject) : param
+							);
+						}
+
+						if (
+							operation.requestBody &&
+							'content' in operation.requestBody &&
+							'application/json' in operation.requestBody.content
+						) {
+							const schema = operation.requestBody.content['application/json'].schema;
+							if (schema && 'properties' in schema && schema.properties) {
+								data.attributes = Object.entries(schema.properties).map(
+									([name, prop]: [string, SchemaObject]) => {
+										return {
+											name,
+											schema: prop,
+											required: (schema.required && schema.required.includes(name)) || false,
+										};
+									}
+								);
+							}
+						}
 
 						schema.push(data);
 					}
@@ -133,33 +185,30 @@ export default defineComponent({
 		});
 
 		const objects = computed(() => {
-			const references: Set<string> = new Set();
-			schema.value.forEach((data) => {
-				Object.entries(data.operation.responses).forEach(
-					([status, response]: [string, ResponseObject | ReferenceObject]) => {
-						if ([200, 203].includes(Number(status)) === false) return;
-						const ref = findRef(response);
-						if (ref !== null && ref.startsWith('#/components/schemas/')) {
-							references.add(ref);
-						}
-					}
-				);
+			const references: Set<{ tag: string; ref: string }> = new Set();
+			Object.entries(openapi.components.schemas).forEach(([name, schema]: [string, {}]) => {
+				if ('x-tag' in schema && schema['x-tag'] === props.section.name)
+					references.add({
+						tag: schema['x-tag'],
+						ref: `#/components/schemas/${name}`,
+					});
 			});
 
 			return [...references]
 				.map((ref) => {
-					const sections = getReferenceSections(ref);
-					if (sections === undefined) return;
+					const sections = getReferenceSections(ref.ref);
+					const schema = getReference(ref.ref);
+					if (sections === undefined || schema === undefined) return;
 					return {
 						name: sections[1],
-						schema: getReference(ref),
-						ref,
+						link: `/docs/api-reference/${ref.tag}`,
+						schema,
 					};
 				})
 				.filter((ref) => ref);
 		});
 
-		return { schema, objects };
+		return { schema, objects, getExamplesString };
 
 		function findRef(obj: Record<string, any>): string | null {
 			if ('$ref' in obj) return obj['$ref'];
@@ -198,6 +247,11 @@ h3 {
 	font-size: 20px;
 }
 
+.example {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .action {
 	.get,
 	&.get {
@@ -224,9 +278,19 @@ h3 {
 .endpoints {
 	display: grid;
 	grid-template-columns: 1fr 350px;
+	max-width: 1000px;
+
+	@media (max-width: 800px) {
+		display: flex;
+		flex-direction: column;
+	}
 
 	.general {
 		grid-column: span 2;
+
+		@media (max-width: 800px) {
+			grid-column: span 1;
+		}
 	}
 
 	.paths {
@@ -301,11 +365,6 @@ h3 {
 			top: 104px;
 			margin: 40px 0;
 		}
-	}
-
-	.example {
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 }
 </style>

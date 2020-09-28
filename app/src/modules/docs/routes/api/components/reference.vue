@@ -9,18 +9,7 @@
 import { defineComponent, computed, PropType } from '@vue/composition-api';
 import openapi from '../../../components/openapi.json';
 import { SchemaObject, SchemasObject, ComponentsObject } from 'openapi3-ts';
-
-export function getReferenceSections(ref: string) {
-	return ref.match(/^#\/components\/(.*?)\/(.*?)$/)?.slice(1);
-}
-
-export function getReference(ref: string): undefined | object {
-	const sections = getReferenceSections(ref);
-	if (sections === undefined) return undefined;
-	const type = sections[0];
-	const name = sections[1];
-	return (openapi.components as ComponentsObject)[type][name];
-}
+import { getReferenceSections, getReference } from './reference';
 
 export default defineComponent({
 	props: {

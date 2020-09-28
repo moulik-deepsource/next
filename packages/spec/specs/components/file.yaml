@@ -1,4 +1,5 @@
 type: object
+x-tag: Files
 properties:
   charset:
     description: Character set of the file.

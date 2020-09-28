@@ -1,4 +1,4 @@
-import { tags, components } from '../components/openapi-deref.json';
+import { tags, components } from '../components/openapi.json';
 
 export type Section = {
 	name: string;
@@ -68,7 +68,7 @@ const sections: Section[] = [
 			},
 			{
 				name: 'Dynamic Endpoints',
-				to: '/docs/api-reference/d-endpoints',
+				to: '/docs/api-reference/dyn-endpoints',
 				flat: true,
 				children: [],
 			},

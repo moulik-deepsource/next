@@ -1,4 +1,5 @@
 type: object
+x-tag: Permissions
 properties:
   collection:
     description: What collection this permission applies to.

@@ -4937,6 +4937,7 @@
     "schemas": {
       "Activity": {
         "type": "object",
+        "x-tag": "Activity",
         "properties": {
           "id": {
             "description": "Unique identifier for the object.",
@@ -5012,6 +5013,7 @@
       },
       "Preset": {
         "type": "object",
+        "x-tag": "Collection presets",
         "properties": {
           "collection": {
             "description": "What collection this collection preset is used for.",
@@ -5098,6 +5100,7 @@
       },
       "Collection": {
         "type": "object",
+        "x-tag": "Collections",
         "properties": {
           "collection": {
             "description": "The collection name.",
@@ -5161,6 +5164,7 @@
       },
       "Field": {
         "type": "object",
+        "x-tag": "Fields",
         "properties": {
           "id": {
             "description": "Unique identifier for the field in the `directus_fields` collection.",
@@ -5300,6 +5304,7 @@
       },
       "File": {
         "type": "object",
+        "x-tag": "Files",
         "properties": {
           "charset": {
             "description": "Character set of the file.",
@@ -5477,6 +5482,7 @@
       },
       "Folder": {
         "type": "object",
+        "x-tag": "Folders",
         "properties": {
           "id": {
             "description": "Unique identifier for the folder.",
@@ -5498,10 +5504,12 @@
       },
       "Item": {
         "type": "object",
+        "x-tag": "Items",
         "properties": {}
       },
       "Permissions": {
         "type": "object",
+        "x-tag": "Permissions",
         "properties": {
           "collection": {
             "description": "What collection this permission applies to.",
@@ -5622,6 +5630,7 @@
       },
       "Relation": {
         "type": "object",
+        "x-tag": "Relations",
         "properties": {
           "many_collection": {
             "description": "Collection that has the field that holds the foreign key.",
@@ -5669,6 +5678,7 @@
       },
       "Revision": {
         "type": "object",
+        "x-tag": "Revisions",
         "properties": {
           "activity": {
             "description": "Unique identifier for the [activity](/api/activity) record.",
@@ -5734,6 +5744,7 @@
       },
       "Role": {
         "type": "object",
+        "x-tag": "Roles",
         "properties": {
           "collection_listing": {
             "description": "Custom override for the admin app collection navigation.",
@@ -5789,6 +5800,7 @@
       },
       "Setting": {
         "type": "object",
+        "x-tag": "Settings",
         "properties": {
           "id": {
             "description": "Unique identifier for the setting.",
@@ -5800,6 +5812,7 @@
       },
       "User": {
         "type": "object",
+        "x-tag": "Users",
         "properties": {
           "tfa_secret": {
             "description": "The 2FA secret string that's used to generate one time passwords.",
@@ -5911,6 +5924,7 @@
       },
       "Webhook": {
         "type": "object",
+        "x-tag": "Webhooks",
         "properties": {
           "id": {
             "description": "The index of the webhook.",
