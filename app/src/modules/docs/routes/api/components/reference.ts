@@ -1,5 +1,6 @@
 import openapi from '../../../components/openapi.json';
 import { ComponentsObject, SchemaObject, ReferenceObject } from 'openapi3-ts';
+import { clone } from 'lodash';
 
 export function getReferenceSections(ref: string) {
 	return ref.match(/^#\/components\/(.*?)\/(.*?)$/)?.slice(1);
@@ -14,8 +15,8 @@ export function getReference(ref: string): undefined | object {
 }
 
 export function dereference(schema: SchemaObject | ReferenceObject) {
-	let newSchema = schema;
-	if ('$ref' in newSchema) newSchema = getReference(schema.$ref) as SchemaObject;
+	let newSchema = clone(schema);
+	if ('$ref' in newSchema) newSchema = getReference(newSchema.$ref) as SchemaObject;
 
 	if (newSchema.type === 'object' && newSchema.properties !== undefined) {
 		const props: Record<string, any> = {};
