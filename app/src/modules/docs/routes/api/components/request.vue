@@ -52,6 +52,7 @@ import api from '@/api';
 import Container from './container.vue';
 import { getExamplesString } from './example';
 import { dereference } from './reference';
+import { copy } from '@/utils/copy-to-clipboard';
 
 export default defineComponent({
 	components: { Container },
@@ -140,15 +141,6 @@ export default defineComponent({
 			getExamplesString,
 			copy,
 		};
-
-		function copy(str: string) {
-			const el = document.createElement('textarea');
-			el.value = str;
-			document.body.appendChild(el);
-			el.select();
-			document.execCommand('copy');
-			document.body.removeChild(el);
-		}
 
 		async function request() {
 			if (url.value === null || props.action === null) return;

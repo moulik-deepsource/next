@@ -34,9 +34,9 @@
 			<div class="container" :key="index + 'example-object'">
 				<container class="example" title="EXAMPLE">
 					<template #header>
-						<v-icon name="copy" />
+						<v-icon name="copy" @click="copy(reference.example)" />
 					</template>
-					<pre class="example" v-html="getExamplesString(reference.schema)" />
+					<pre class="example" v-html="reference.example" />
 				</container>
 			</div>
 		</template>
@@ -86,6 +86,8 @@ import { getExamplesString } from './components/example';
 import Schema from './components/schema.vue';
 import { getReference, getReferenceSections } from './components/reference';
 import Container from './components/container.vue';
+import { copy } from '@/utils/copy-to-clipboard';
+
 import {
 	PathItemObject,
 	OperationObject,
@@ -202,13 +204,14 @@ export default defineComponent({
 					return {
 						name: sections[1],
 						link: `/docs/api-reference/${ref.tag}`,
+						example: getExamplesString(schema),
 						schema,
 					};
 				})
 				.filter((ref) => ref);
 		});
 
-		return { schema, objects, getExamplesString };
+		return { schema, objects, copy };
 
 		function findRef(obj: Record<string, any>): string | null {
 			if ('$ref' in obj) return obj['$ref'];
