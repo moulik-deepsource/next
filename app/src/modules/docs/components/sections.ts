@@ -70,22 +70,36 @@ const sections: Section[] = [
 				name: 'Dynamic Endpoints',
 				to: '/docs/api-reference/dyn-endpoints',
 				flat: true,
-				children: [],
+				children: [
+					...tags
+						.filter((tag) => tag.name.endsWith('Collection'))
+						.map((tag) => {
+							const id = tag.name.replace(' ', '-').toLowerCase();
+							const section: Section = {
+								name: tag.name,
+								to: `/docs/api-reference/endpoints/${id}`,
+								description: tag.description,
+							};
+							return section;
+						}),
+				],
 			},
 			{
 				name: 'Endpoints',
 				to: '/docs/api-reference/endpoints',
 				flat: true,
 				children: [
-					...tags.map((tag) => {
-						const id = tag.name.replace(' ', '-').toLowerCase();
-						const section: Section = {
-							name: tag.name,
-							to: `/docs/api-reference/endpoints/${id}`,
-							description: tag.description,
-						};
-						return section;
-					}),
+					...tags
+						.filter((tag) => tag.name.endsWith('Collection') === false)
+						.map((tag) => {
+							const id = tag.name.replace(' ', '-').toLowerCase();
+							const section: Section = {
+								name: tag.name,
+								to: `/docs/api-reference/endpoints/${id}`,
+								description: tag.description,
+							};
+							return section;
+						}),
 				],
 			},
 		],
