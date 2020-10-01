@@ -74,7 +74,7 @@ const sections: Section[] = [
 					...tags
 						.filter((tag) => tag.name.endsWith('Collection'))
 						.map((tag) => {
-							const id = tag.name.replace(' ', '-').toLowerCase();
+							const id = tag.name.replace(/ /g, '-').toLowerCase();
 							const section: Section = {
 								name: tag.name,
 								to: `/docs/api-reference/endpoints/${id}`,
@@ -92,7 +92,7 @@ const sections: Section[] = [
 					...tags
 						.filter((tag) => tag.name.endsWith('Collection') === false)
 						.map((tag) => {
-							const id = tag.name.replace(' ', '-').toLowerCase();
+							const id = tag.name.replace(/ /g, '-').toLowerCase();
 							const section: Section = {
 								name: tag.name,
 								to: `/docs/api-reference/endpoints/${id}`,
