@@ -46,7 +46,7 @@ function props(route: Route) {
 
 export default defineModule(({ i18n }) => ({
 	id: 'docs',
-	name: i18n.t('docs'),
+	name: i18n.t('documentation'),
 	icon: 'info',
 	routes: [
 		{
@@ -55,6 +55,5 @@ export default defineModule(({ i18n }) => ({
 			props: props,
 		},
 	],
-	order: Infinity,
-	persistent: true,
+	order: 20,
 }));

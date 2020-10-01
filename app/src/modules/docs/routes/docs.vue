@@ -1,9 +1,10 @@
 <template>
-	<private-view :title="title">
-		<template #headline>Documentation</template>
-		<template v-if="notFound === false" #title-outer:prepend>
+	<private-view :title="notFound ? $t('page_not_found') : title">
+		<template #headline>{{ $t('documentation') }}</template>
+
+		<template #title-outer:prepend>
 			<v-button rounded disabled icon>
-				<v-icon :name="apiView ? 'code' : section.icon || section.sectionIcon" />
+				<v-icon :name="isAPIReference ? 'code' : section.icon || section.sectionIcon" />
 			</v-button>
 		</template>
 
@@ -11,11 +12,13 @@
 			<docs-navigation />
 		</template>
 
-		<v-info v-if="notFound" icon="not_interested" title="Api Reference Not Found">
-			The api reference you are looking for doesn't seem to exist.
-		</v-info>
-		<api v-else-if="apiView" :section="section" />
-		<markdown v-else :section="section" />
+		<div v-if="notFound" class="not-found">
+			<v-info :title="$t('page_not_found')" icon="not_interested">
+				{{ $t('page_not_found_body') }}
+			</v-info>
+		</div>
+		<api v-else-if="isAPIReference" :section="section" />
+		<markdown v-else>{{ mdString }}</markdown>
 	</private-view>
 </template>
 
@@ -25,6 +28,7 @@ import DocsNavigation from '../components/navigation.vue';
 import { Section } from '../components/sections';
 import Api from './api/api.vue';
 import Markdown from './markdown.vue';
+import i18n from '@/lang';
 
 declare module '*.md';
 
@@ -37,18 +41,57 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-		const notFound = computed(() => props.section === null);
-		const apiView = computed(() => props.section && props.section.to.startsWith('/docs/api-reference'));
-		const title = computed(() => {
-			if (notFound.value) return 'Page not Found';
-			return apiView.value ? 'Api Reference' : props.section.name;
+		const mdString = ref<string | null>(null);
+		const loading = ref(true);
+		const error = ref(null);
+
+		const isAPIReference = computed(() => props.section && props.section.to.startsWith('/docs/api-reference'));
+		const notFound = computed(() => {
+			return props.section === null || error.value !== null;
 		});
-		return { apiView, notFound, title };
+
+		const title = computed(() => {
+			return isAPIReference.value ? i18n.t('api_reference') : props.section.name;
+		});
+
+		watch(() => props.section, loadMD, { immediate: true });
+
+		return { isAPIReference, notFound, title, mdString };
+
+		async function loadMD() {
+			if (isAPIReference.value) return;
+			loading.value = true;
+			error.value = null;
+
+			if (props.section === null) {
+				mdString.value = null;
+				return;
+			}
+
+			const loadString = props.section.to.replace('/docs', '');
+
+			try {
+				const md = await import(`raw-loader!@directus/docs${loadString}.md`);
+				mdString.value = md.default;
+			} catch (err) {
+				mdString.value = null;
+				error.value = err;
+			} finally {
+				loading.value = false;
+			}
+		}
 	},
 });
 </script>
 <style lang="scss" scoped>
 .v-info {
+	padding: 20vh 0;
+}
+
+.not-found {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	padding: 20vh 0;
 }
 </style>

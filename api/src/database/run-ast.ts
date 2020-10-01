@@ -13,7 +13,7 @@ type RunASTOptions = {
 	child?: boolean;
 };
 
-export default async function runAST(originalAST: AST, options?: RunASTOptions): Promise<Item | Item[]> {
+export default async function runAST(originalAST: AST, options?: RunASTOptions): Promise<null | Item | Item[]> {
 	const ast = cloneDeep(originalAST);
 
 	const query = options?.query || ast.query;
@@ -27,9 +27,13 @@ export default async function runAST(originalAST: AST, options?: RunASTOptions):
 
 	const rawItems: Item | Item[] = await dbQuery;
 
+	if (!rawItems) return null;
+
 	// Run the items through the special transforms
 	const payloadService = new PayloadService(ast.name, { knex });
 	let items = await payloadService.processValues('read', rawItems);
+
+	if (!items || items.length === 0) return items;
 
 	// Apply the `_in` filters to the nested collection batches
 	const nestedASTs = applyParentFilters(nestedCollectionASTs, items);
@@ -48,8 +52,10 @@ export default async function runAST(originalAST: AST, options?: RunASTOptions):
 
 		let nestedItems = await runAST(nestedAST, { knex, child: true });
 
-		// Merge all fetched nested records with the parent items
-		items = mergeWithParentItems(nestedItems, items, nestedAST, tempLimit);
+		if (nestedItems) {
+			// Merge all fetched nested records with the parent items
+			items = mergeWithParentItems(nestedItems, items, nestedAST, tempLimit);
+		}
 	}
 
 	// During the fetching of data, we have to inject a couple of required fields for the child nesting
@@ -104,7 +110,7 @@ async function parseCurrentLevel(ast: AST, knex: Knex) {
 }
 
 async function getDBQuery(knex: Knex, table: string, columns: string[], query: Query, primaryKeyField: string): Promise<QueryBuilder> {
-	let dbQuery = knex.select(columns).from(table);
+	let dbQuery = knex.select(columns.map((column) => `${table}.${column}`)).from(table);
 
 	const queryCopy = clone(query);
 
@@ -117,6 +123,7 @@ async function getDBQuery(knex: Knex, table: string, columns: string[], query: Q
 	query.sort = query.sort || [{ column: primaryKeyField, order: 'asc' }];
 
 	await applyQuery(table, dbQuery, queryCopy);
+
 	return dbQuery;
 }
 
@@ -168,17 +175,22 @@ function mergeWithParentItems(nestedItem: Item | Item[], parentItem: Item | Item
 
 	if (isM2O(nestedAST)) {
 		for (const parentItem of parentItems) {
-			const itemChildren = nestedItems.filter((nestedItem) => {
+			const itemChild = nestedItems.find((nestedItem) => {
 				return nestedItem[nestedAST.relation.one_primary] === parentItem[nestedAST.fieldKey];
 			});
 
-			parentItem[nestedAST.fieldKey] = itemChildren;
+			parentItem[nestedAST.fieldKey] = itemChild || null;
 		}
 	} else {
 		for (const parentItem of parentItems) {
 			let itemChildren = nestedItems.filter((nestedItem) => {
+				if (nestedItem === null) return false;
 				if (Array.isArray(nestedItem[nestedAST.relation.many_field])) return true;
-				return nestedItem[nestedAST.relation.many_field] === parentItem[nestedAST.relation.one_primary];
+
+				return (
+					nestedItem[nestedAST.relation.many_field] === parentItem[nestedAST.relation.one_primary] ||
+					nestedItem[nestedAST.relation.many_field]?.[nestedAST.relation.many_primary] === parentItem[nestedAST.relation.one_primary]
+				);
 			});
 
 			// We re-apply the requested limit here. This forces the _n_ nested items per parent concept
@@ -203,13 +215,12 @@ function removeTemporaryFields(rawItem: Item | Item[], ast: AST | NestedCollecti
 	const nestedCollections = ast.children.filter((child) => child.type === 'collection') as NestedCollectionAST[];
 
 	for (const rawItem of rawItems) {
+		if (rawItem === null) return rawItem;
 		const item = fields.includes('*') ? rawItem : pick(rawItem, fields);
 
 		for (const nestedCollection of nestedCollections) {
-			item[nestedCollection.fieldKey] = removeTemporaryFields(Array.isArray(rawItem[nestedCollection.fieldKey]) ? rawItem[nestedCollection.fieldKey] : [rawItem[nestedCollection.fieldKey]], nestedCollection);
-
-			if (isM2O(nestedCollection)) {
-				item[nestedCollection.fieldKey] = item[nestedCollection.fieldKey][0] || null;
+			if (item[nestedCollection.fieldKey] !== null) {
+				item[nestedCollection.fieldKey] = removeTemporaryFields(rawItem[nestedCollection.fieldKey], nestedCollection);
 			}
 		}
 

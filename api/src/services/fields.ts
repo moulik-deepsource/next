@@ -29,7 +29,7 @@ export class FieldsService {
 		this.payloadService = new PayloadService('directus_fields');
 	}
 
-	async readAll(collection?: string) {
+	async readAll(collection?: string): Promise<Field[]> {
 		let fields: FieldMeta[];
 		const nonAuthorizedItemsService = new ItemsService('directus_fields', { knex: this.knex });
 
@@ -68,15 +68,26 @@ export class FieldsService {
 		});
 
 		const aliasQuery = this.knex
-			.select<FieldMeta[]>('*')
-			.from('directus_fields')
-			.whereIn('special', ['alias', 'o2m', 'm2m']);
+			.select<any[]>('*')
+			.from('directus_fields');
 
 		if (collection) {
 			aliasQuery.andWhere('collection', collection);
 		}
 
 		let aliasFields = await aliasQuery;
+
+		const aliasTypes = ['alias', 'o2m', 'm2m', 'files', 'files', 'translations'];
+
+		aliasFields = aliasFields.filter((field) => {
+			const specials = (field.special || '').split(',');
+
+			for (const type of aliasTypes) {
+				if (specials.includes(type)) return true;
+			}
+
+			return false;
+		});
 
 		aliasFields = (await this.payloadService.processValues('read', aliasFields)) as FieldMeta[];
 
@@ -336,6 +347,8 @@ export class FieldsService {
 			column = table[type](field.field /* precision, scale */);
 		} else if (field.type === 'csv') {
 			column = table.string(field.field);
+		} else if (field.type === 'dateTime') {
+			column = table.dateTime(field.field, { useTz: false });
 		} else {
 			column = table[field.type](field.field);
 		}
@@ -344,7 +357,7 @@ export class FieldsService {
 			column.defaultTo(field.schema.default_value);
 		}
 
-		if (field.schema.is_nullable !== undefined && field.schema.is_nullable === false) {
+		if (field.schema?.is_nullable !== undefined && field.schema.is_nullable === false) {
 			column.notNullable();
 		} else {
 			column.nullable();
