@@ -17,7 +17,6 @@ s
 
 <script lang="ts">
 import { defineComponent, computed, PropType } from '@vue/composition-api';
-import openapi from '../../../components/openapi.json';
 import { ResponseObject, ReferenceObject } from 'openapi3-ts';
 
 export default defineComponent({

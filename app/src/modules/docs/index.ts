@@ -1,6 +1,6 @@
 import { defineModule } from '@/modules/define';
 import Docs from './routes/docs.vue';
-import sections, { Section } from './components/sections';
+import sections, { Section, Divider } from './components/sections';
 import { Route } from 'vue-router';
 
 function urlSplitter(url: string) {
@@ -9,8 +9,10 @@ function urlSplitter(url: string) {
 	return url.split('/');
 }
 
-function urlToSection(urlSections: string[], sections: Section[]): Section | null {
-	const section = sections.find((s) => urlSplitter(s.to).pop() === urlSections[0]);
+function urlToSection(urlSections: string[], sections: (Section | Divider)[]): Section | null {
+	const section = sections.find((s) => 'to' in s && urlSplitter(s.to).pop() === urlSections[0]) as
+		| Section
+		| undefined;
 
 	if (section === undefined) {
 		return null;
@@ -18,8 +20,14 @@ function urlToSection(urlSections: string[], sections: Section[]): Section | nul
 
 	if (urlSections.length === 1) {
 		let finalSection = section;
-		while (finalSection.children !== undefined) {
-			finalSection = finalSection.children[0];
+		let index = 0;
+		while (finalSection.children !== undefined && finalSection.children.length < index) {
+			if ('divider' in finalSection.children[index]) {
+				index++;
+			} else {
+				index = 0;
+				finalSection = finalSection.children[index] as Section;
+			}
 		}
 		if (section.icon) finalSection.icon = section.icon;
 		return finalSection;

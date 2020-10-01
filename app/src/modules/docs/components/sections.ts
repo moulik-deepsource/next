@@ -6,12 +6,15 @@ export type Section = {
 	description?: string;
 	icon?: string;
 	sectionIcon?: string;
-	children?: Section[];
+	children?: (Section | Divider)[];
 	default?: string;
-	flat?: boolean;
 };
 
-const sections: Section[] = [
+export type Divider = {
+	divider: boolean;
+};
+
+const sections: (Section | Divider)[] = [
 	{
 		icon: 'play_arrow',
 		name: 'Getting Started',
@@ -224,42 +227,30 @@ const sections: Section[] = [
 				name: 'General Information',
 				to: '/docs/api-reference/general',
 			},
-			{
-				name: 'Dynamic Endpoints',
-				to: '/docs/api-reference/dyn-endpoints',
-				flat: true,
-				children: [
-					...tags
-						.filter((tag) => tag.name.endsWith('Collection'))
-						.map((tag) => {
-							const id = tag.name.replace(/ /g, '-').toLowerCase();
-							const section: Section = {
-								name: tag.name,
-								to: `/docs/api-reference/endpoints/${id}`,
-								description: tag.description,
-							};
-							return section;
-						}),
-				],
-			},
-			{
-				name: 'Endpoints',
-				to: '/docs/api-reference/endpoints',
-				flat: true,
-				children: [
-					...tags
-						.filter((tag) => tag.name.endsWith('Collection') === false)
-						.map((tag) => {
-							const id = tag.name.replace(/ /g, '-').toLowerCase();
-							const section: Section = {
-								name: tag.name,
-								to: `/docs/api-reference/endpoints/${id}`,
-								description: tag.description,
-							};
-							return section;
-						}),
-				],
-			},
+			{ divider: true },
+			...tags
+				.filter((tag) => tag.name.endsWith('Collection'))
+				.map((tag) => {
+					const id = tag.name.replace(/ /g, '-').toLowerCase();
+					const section: Section = {
+						name: tag.name,
+						to: `/docs/api-reference/${id}`,
+						description: tag.description,
+					};
+					return section;
+				}),
+			{ divider: true },
+			...tags
+				.filter((tag) => tag.name.endsWith('Collection') === false)
+				.map((tag) => {
+					const id = tag.name.replace(/ /g, '-').toLowerCase();
+					const section: Section = {
+						name: tag.name,
+						to: `/docs/api-reference/${id}`,
+						description: tag.description,
+					};
+					return section;
+				}),
 		],
 	},
 ];

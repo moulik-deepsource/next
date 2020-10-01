@@ -88,11 +88,6 @@
 					<br />
 					{{ type.description }}
 				</span>
-
-				<span v-if="type.nullable" class="nullable">
-					<br />
-					nullable
-				</span>
 				<!-- <span v-if="type.example" class="example">
 					<br />
 					example: {{ type.example }}

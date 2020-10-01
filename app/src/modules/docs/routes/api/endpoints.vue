@@ -208,7 +208,7 @@ export default defineComponent({
 						schema,
 					};
 				})
-				.filter((ref) => ref);
+				.filter((ref) => ref !== undefined);
 		});
 
 		return { schema, objects, copy };
