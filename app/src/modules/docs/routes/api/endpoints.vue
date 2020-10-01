@@ -84,7 +84,7 @@ import { Section } from '../../components/sections';
 import RequestComponent from './components/request.vue';
 import { getExamplesString } from './components/example';
 import Schema from './components/schema.vue';
-import { getReference, getReferenceSections } from './components/reference';
+import { getReference, getReferenceSections, dereference } from './components/reference';
 import Container from './components/container.vue';
 import { copy } from '@/utils/copy-to-clipboard';
 
@@ -164,14 +164,20 @@ export default defineComponent({
 							'content' in operation.requestBody &&
 							'application/json' in operation.requestBody.content
 						) {
-							const schema = operation.requestBody.content['application/json'].schema;
+							let schema = operation.requestBody.content['application/json'].schema;
+							if (schema && '$ref' in schema) {
+								schema = dereference(schema);
+							}
+
+							const required = schema?.required || [];
+
 							if (schema && 'properties' in schema && schema.properties) {
 								data.attributes = Object.entries(schema.properties).map(
 									([name, prop]: [string, SchemaObject]) => {
 										return {
 											name,
 											schema: prop,
-											required: (schema.required && schema.required.includes(name)) || false,
+											required: required.includes(name),
 										};
 									}
 								);
@@ -187,43 +193,20 @@ export default defineComponent({
 		});
 
 		const objects = computed(() => {
-			const references: Set<{ tag: string; ref: string }> = new Set();
-			Object.entries(openapi.components.schemas).forEach(([name, schema]: [string, {}]) => {
-				if ('x-tag' in schema && schema['x-tag'] === props.section.name)
-					references.add({
-						tag: schema['x-tag'],
-						ref: `#/components/schemas/${name}`,
-					});
-			});
-
-			return [...references]
-				.map((ref) => {
-					const sections = getReferenceSections(ref.ref);
-					const schema = getReference(ref.ref);
-					if (sections === undefined || schema === undefined) return;
-					return {
-						name: sections[1],
-						link: `/docs/api-reference/${ref.tag}`,
-						example: getExamplesString(schema),
-						schema,
-					};
+			return Object.entries(openapi.components.schemas)
+				.map(([name, schema]: [string, {}]) => {
+					if ('x-tag' in schema && schema['x-tag'] === props.section.name)
+						return {
+							name,
+							link: `/docs/api-reference/${schema['x-tag']}`,
+							example: getExamplesString(schema),
+							schema,
+						};
 				})
 				.filter((ref) => ref !== undefined);
 		});
 
 		return { schema, objects, copy };
-
-		function findRef(obj: Record<string, any>): string | null {
-			if ('$ref' in obj) return obj['$ref'];
-			let $ref: string | null = null;
-			Object.values(obj).forEach((val) => {
-				if (typeof val === 'object') {
-					const ref = findRef(val);
-					if (ref !== null && $ref === null) $ref = ref;
-				}
-			});
-			return $ref;
-		}
 	},
 });
 </script>

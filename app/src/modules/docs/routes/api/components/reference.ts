@@ -1,6 +1,6 @@
 import openapi from '../../../components/openapi.json';
 import { ComponentsObject, SchemaObject, ReferenceObject } from 'openapi3-ts';
-import { clone } from 'lodash';
+import { cloneDeep, clone } from 'lodash';
 
 export function getReferenceSections(ref: string) {
 	return ref.match(/^#\/components\/(.*?)\/(.*?)$/)?.slice(1);
@@ -11,21 +11,26 @@ export function getReference(ref: string): undefined | object {
 	if (sections === undefined) return undefined;
 	const type = sections[0];
 	const name = sections[1];
-	return (openapi.components as ComponentsObject)[type][name];
+
+	return cloneDeep((openapi.components as ComponentsObject)[type][name]);
 }
 
-export function dereference(schema: SchemaObject | ReferenceObject) {
+export function dereference(schema: SchemaObject | ReferenceObject, depth = 1) {
 	let newSchema = clone(schema);
-	if ('$ref' in newSchema) newSchema = getReference(newSchema.$ref) as SchemaObject;
+
+	if ('$ref' in newSchema) {
+		depth -= 1;
+		newSchema = getReference(newSchema.$ref) as SchemaObject;
+	}
 
 	if (newSchema.type === 'object' && newSchema.properties !== undefined) {
 		const props: Record<string, any> = {};
 		Object.entries(newSchema.properties).forEach(([key, value]) => {
-			props[key] = dereference(value);
+			if (depth > 0) props[key] = dereference(value, depth);
 		});
-		newSchema.properties = props;
+		if (depth > 0) newSchema.properties = props;
 	} else if (newSchema.type === 'array' && newSchema.items !== undefined) {
-		newSchema.items = dereference(newSchema.items);
+		if (depth > 0) newSchema.items = dereference(newSchema.items, depth);
 	}
 
 	return newSchema;

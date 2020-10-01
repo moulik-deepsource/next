@@ -1,20 +1,16 @@
 import { ReferenceObject, SchemaObject } from 'openapi3-ts';
 import { getReference } from './reference';
 
-export function getExamplesString(schema: SchemaObject | ReferenceObject) {
+export function getExamplesString(schema: SchemaObject) {
 	return JSON.stringify(getExamples(schema), null, 4);
 }
 
-export function getExamples(schema: SchemaObject | ReferenceObject) {
-	if (schema === null) return null;
-	if ('$ref' in schema) {
-		schema = getReference(schema.$ref) as SchemaObject;
-	}
-	if (schema.properties === undefined) return null;
+export function getExamples(schema: SchemaObject) {
+	if (schema.properties === undefined) return {};
 	return filterExamples(schema.properties);
 }
 
-function filterExamples(schema: SchemaObject | ReferenceObject) {
+function filterExamples(schema: Record<string, SchemaObject>) {
 	const obj: Record<string, string | Record<string, any>> = {};
 
 	Object.entries(schema).forEach(([key, value]) => {

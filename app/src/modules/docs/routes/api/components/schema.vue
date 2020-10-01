@@ -123,23 +123,23 @@ export default defineComponent({
 
 		const types = computed(() => {
 			const types: SchemaObject[] = [];
-			const schema = props.data as SchemaObject;
+			const schema = props.data;
 
-			if (schema.type !== undefined) {
+			if (schema.$ref !== undefined) {
 				typeFiler.value = null;
 				types.push(schema);
-			} else if (schema.oneOf) {
+			} else if ('type' in schema) {
+				typeFiler.value = null;
+				types.push(schema);
+			} else if ('oneOf' in schema && schema.oneOf !== undefined) {
 				typeFiler.value = 'oneOf';
 				types.push(...schema.oneOf);
-			} else if (schema.anyOf) {
+			} else if ('anyOf' in schema && schema.anyOf !== undefined) {
 				typeFiler.value = 'anyOf';
 				types.push(...schema.anyOf);
-			} else if (schema.allOf) {
+			} else if ('allOf' in schema && schema.allOf !== undefined) {
 				typeFiler.value = 'allOf';
 				types.push(...schema.allOf);
-			} else if (props.data.$ref !== undefined) {
-				typeFiler.value = null;
-				types.push(schema);
 			}
 
 			return types;
@@ -152,7 +152,7 @@ export default defineComponent({
 			const schema = getReference(ref) as { 'x-tag': string } | undefined;
 			if (sections !== undefined && schema !== undefined && 'x-tag' in schema) {
 				const tag = schema['x-tag'].replaceAll(' ', '-').toLowerCase();
-				return `/docs/api-reference/endpoints/${tag}#object-${sections[1]}`;
+				return `/docs/api-reference/${tag}#object-${sections[1]}`;
 			}
 			return null;
 		}

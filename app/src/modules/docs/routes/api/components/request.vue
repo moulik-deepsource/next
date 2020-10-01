@@ -8,7 +8,7 @@
 				</div>
 			</template>
 			<span>{{ action.toUpperCase() }}</span>
-			<span contenteditable v-once v-html="url" @input="url = $event.target.innerHTML"></span>
+			<input class="url-input" v-model="url" />
 		</container>
 
 		<template v-if="requestBody !== null">
@@ -16,13 +16,10 @@
 				<template slot="header">
 					<v-icon name="copy" @click="copy(requestBody)"></v-icon>
 				</template>
-				<pre
-					class="example"
-					v-once
-					@input="requestBody = $event.target.innerHTML"
-					contenteditable
-					v-html="requestBody"
-				></pre>
+				<div class="request-body">
+					<pre class="textarea-sizer">{{ requestBody.replace(/\s$/g, '\n.') }}</pre>
+					<textarea class="example" v-model="requestBody"></textarea>
+				</div>
 			</container>
 		</template>
 
@@ -93,16 +90,17 @@ export default defineComponent({
 
 		const _response = ref<Record<string, any> | null>(null);
 		const responseStatus = ref<{ status: number; statusText: string } | null>(null);
-		const _requestBody = ref<Record<string, any> | null>(null);
+		const _requestBody = ref<string | null>(null);
 
 		const response = computed(() => {
-			if (_response.value !== null) return _response.value;
+			if (_response.value !== null) return JSON.stringify(_response.value, null, 4);
 			if (
 				'200' in props.operation.responses &&
 				props.operation.responses['200'].content &&
 				'application/json' in props.operation.responses['200'].content
 			) {
 				const schema = props.operation.responses['200'].content['application/json'].schema;
+
 				return getExamplesString(dereference(schema));
 			}
 			return null;
@@ -110,7 +108,7 @@ export default defineComponent({
 
 		const requestBody = computed({
 			get() {
-				if (_requestBody.value !== null) return JSON.stringify(_requestBody.value, null, 4);
+				if (_requestBody.value !== null) return _requestBody.value;
 
 				if (
 					props.operation.requestBody &&
@@ -119,13 +117,13 @@ export default defineComponent({
 					props.operation.requestBody.content['application/json'].schema
 				) {
 					const schema = props.operation.requestBody.content['application/json'].schema;
-					return getExamplesString(schema);
+					return getExamplesString(dereference(schema));
 				}
 				return null;
 			},
 			set(val: string | null) {
 				if (val === null) return;
-				_requestBody.value = JSON.parse(val);
+				_requestBody.value = val;
 			},
 		});
 
@@ -140,12 +138,15 @@ export default defineComponent({
 			responseStatus,
 			getExamplesString,
 			copy,
+			_requestBody,
+			_response,
 		};
 
 		async function request() {
 			if (url.value === null || props.action === null) return;
 
 			let request;
+			let body;
 
 			try {
 				switch (props.action) {
@@ -153,10 +154,14 @@ export default defineComponent({
 						request = await api.get(url.value);
 						break;
 					case 'post':
-						request = await api.post(url.value, requestBody.value);
+						if (requestBody.value === null) return;
+						body = JSON.parse(requestBody.value);
+						request = await api.post(url.value, body);
 						break;
 					case 'patch':
-						request = await api.patch(url.value, requestBody.value);
+						if (requestBody.value === null) return;
+						body = JSON.parse(requestBody.value);
+						request = await api.patch(url.value, body);
 						break;
 					case 'delete':
 						request = await api.delete(url.value);
@@ -208,6 +213,25 @@ export default defineComponent({
 		&.success {
 			background-color: var(--primary);
 		}
+	}
+}
+input.url-input {
+	background-color: var(--background-page);
+	border: none;
+}
+
+.request-body {
+	position: relative;
+
+	textarea.example {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: var(--background-page);
+		border: none;
+		resize: none;
 	}
 }
 </style>
