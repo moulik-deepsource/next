@@ -8,6 +8,7 @@
 import { defineComponent, ref, computed, watch, PropType, onMounted, onUpdated } from '@vue/composition-api';
 import marked from 'marked';
 import highlight from 'highlight.js';
+import hashScoll from '@/composables/use-hash-scroll';
 
 export default defineComponent({
 	setup(props, { slots }) {
@@ -39,6 +40,8 @@ export default defineComponent({
 			);
 
 			html.value = htmlString;
+
+			hashScoll('.private-view #content');
 		}
 	},
 });
@@ -134,8 +137,8 @@ export default defineComponent({
 			tt {
 				margin: 0 1px;
 				padding: 0 4px;
-				font-family: var(--family-monospace);
 				font-size: 15px;
+				font-family: var(--family-monospace);
 				white-space: nowrap;
 				background-color: var(--background-page);
 				border: 1px solid var(--background-normal);
@@ -270,9 +273,9 @@ export default defineComponent({
 			}
 
 			blockquote {
-				font-size: 18px;
 				padding: 0 20px;
 				color: var(--foreground-subdued);
+				font-size: 18px;
 				border-left: 2px solid var(--background-normal);
 			}
 
@@ -340,8 +343,7 @@ export default defineComponent({
 				}
 
 				&.shadow {
-					box-shadow: 0px 5px 10px 0px rgba(23,41,64,0.1),
-								0px 2px 40px 0px rgba(23,41,64,0.05);
+					box-shadow: 0px 5px 10px 0px rgba(23, 41, 64, 0.1), 0px 2px 40px 0px rgba(23, 41, 64, 0.05);
 				}
 			}
 
@@ -368,11 +370,11 @@ export default defineComponent({
 
 			.hint {
 				display: inline-block;
+				width: 100%;
 				margin: 20px 0;
 				padding: 0 20px;
 				background-color: var(--background-subdued);
 				border-left: 2px solid var(--primary);
-				width: 100%;
 
 				&-title {
 					font-weight: bold;
