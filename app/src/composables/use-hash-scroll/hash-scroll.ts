@@ -3,15 +3,12 @@ import { NavigationGuard } from 'vue-router';
 function hashScroll(elementQuery: string) {
 	const tryScrolling = (hash: string) => {
 		const scrollingElement = document.querySelector(elementQuery);
-		console.log('Scoller: ', scrollingElement);
 
 		if (scrollingElement !== null) {
 			let top = 0;
 
 			if (hash !== '') {
 				const ref = document.getElementById(hash.substr(1));
-				console.log('ref: ', ref, hash);
-
 				if (ref !== null) top = ref.offsetTop - 85;
 			}
 
