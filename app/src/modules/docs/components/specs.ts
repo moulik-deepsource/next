@@ -6,8 +6,6 @@ let oas = ref<OpenAPIObject | null>(null)
 
 function getOAS() {
 	if(oas.value === null) {
-		console.log(oas.value);
-		
 		api.get('/server/specs/oas').then((response) => {
 			try {
 				oas.value = response.data

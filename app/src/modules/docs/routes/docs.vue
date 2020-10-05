@@ -18,7 +18,7 @@
 				{{ $t('page_not_found_body') }}
 			</v-info>
 		</div>
-		<api v-else-if="isAPIReference" :section="section" />
+		<api v-else-if="isAPIReference && section" :section="section" />
 		<markdown v-else>{{ mdString }}</markdown>
 	</private-view>
 </template>
@@ -48,7 +48,7 @@ export default defineComponent({
 	setup(props) {
 		const mdString = ref<string | null>(null);
 		const openapi = getOAS()
-		const loading = ref(true);
+		const loading = ref(false);
 		const error = ref(null);
 
 		const { section, navSections } = useSection()
@@ -99,9 +99,6 @@ export default defineComponent({
 				const dynamicSpecs = getOASSections(true)
 				const staticSpecs = getOASSections(false)
 
-				console.log(dynamicSpecs, staticSpecs);
-				
-
 				if(dynamicSpecs.length > 0) {
 					reference.children?.push({divider: true})
 					reference.children?.push(...dynamicSpecs)
@@ -116,7 +113,10 @@ export default defineComponent({
 
 			const section = computed(() => {
 				if(navSections.value === null) return null;
-				return urlToSection(urlSplitter(props.path), navSections.value);
+				loading.value === false;
+				const section = urlToSection(urlSplitter(props.path), navSections.value)
+				loading.value === false;
+				return section;
 			})
 
 			function getOASSections(dynamic: boolean) {

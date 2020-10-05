@@ -223,8 +223,13 @@ input.url-input {
 .request-body {
 	position: relative;
 
+	.textarea-sizer {
+		overflow: hidden;
+	}
+
 	textarea.example {
 		position: absolute;
+		white-space: pre;
 		top: 0;
 		left: 0;
 		width: 100%;

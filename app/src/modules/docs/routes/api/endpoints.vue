@@ -86,7 +86,6 @@ import Schema from './components/schema.vue';
 import { getReference, getReferenceSections, dereference } from './components/reference';
 import Container from './components/container.vue';
 import { copy } from '@/utils/copy-to-clipboard';
-import { useSpecsStore } from '@/stores'
 
 import {
 	PathItemObject,
@@ -96,6 +95,7 @@ import {
 	ResponseObject,
 	SchemaObject,
 } from 'openapi3-ts';
+import getOAS from '../../components/specs';
 
 export enum PathItemKeys {
 	GET = 'get',
@@ -133,11 +133,12 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-		const openapi = useSpecsStore().state.oas
+		const openapi = getOAS()
 
 		const schema = computed(() => {
 			const schema: Data[] = [];
-			const paths = openapi.paths as Record<string, PathItemObject>;
+			if(openapi.value === null) return [];
+			const paths = openapi.value.paths as Record<string, PathItemObject>;
 
 			Object.entries(paths).forEach(([key, value]) => {
 				Object.entries(value).forEach(([operationKey, operation]: [string, OperationObject]) => {
@@ -195,9 +196,9 @@ export default defineComponent({
 		});
 
 		const objects = computed(() => {
-			if(openapi.components?.schemas === undefined) return [];
+			if(openapi.value?.components?.schemas === undefined) return [];
 
-			return Object.entries(openapi.components.schemas)
+			return Object.entries(openapi.value.components.schemas)
 				.map(([name, schema]) => {
 					if ('x-tag' in schema && schema['x-tag'] === props.section.name)
 						return {
