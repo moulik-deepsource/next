@@ -51,7 +51,7 @@ export default defineComponent({
 		});
 
 		const title = computed(() => {
-			return isAPIReference.value ? i18n.t('api_reference') : props.section.name;
+			return isAPIReference.value ? i18n.t('api_reference') : props.section.sectionName;
 		});
 
 		watch(() => props.section, loadMD, { immediate: true });

@@ -5,6 +5,7 @@ export * from './collections';
 export * from './fields';
 export * from './files';
 export * from './folders';
+export * from './graphql';
 export * from './items';
 export * from './meta';
 export * from './payload';
@@ -18,3 +19,4 @@ export * from './settings';
 export * from './users';
 export * from './utils';
 export * from './webhooks';
+export * from './specifications'

@@ -132,9 +132,10 @@ export default defineComponent({
 
 			code,
 			tt {
-				margin: 0 2px;
-				padding: 0 5px;
+				margin: 0 1px;
+				padding: 0 4px;
 				font-family: var(--family-monospace);
+				font-size: 15px;
 				white-space: nowrap;
 				background-color: var(--background-page);
 				border: 1px solid var(--background-normal);
@@ -260,6 +261,11 @@ export default defineComponent({
 				ul,
 				ol {
 					margin: 4px 0;
+
+					li {
+						margin: 4px 0;
+						line-height: 24px;
+					}
 				}
 			}
 
@@ -279,6 +285,7 @@ export default defineComponent({
 			}
 
 			table {
+				margin: 40px 0;
 				padding: 0;
 				border-collapse: collapse;
 				border-spacing: 0;
@@ -365,9 +372,15 @@ export default defineComponent({
 				padding: 0 20px;
 				background-color: var(--background-subdued);
 				border-left: 2px solid var(--primary);
+				width: 100%;
 
 				&-title {
 					font-weight: bold;
+					margin-bottom: 0.5em;
+				}
+
+				&-body {
+					margin-top: 0.5em;
 				}
 
 				&.tip {
