@@ -1,8 +1,8 @@
-import { useSpecsStore } from '@/stores';
 import { ComponentsObject, SchemaObject, ReferenceObject } from 'openapi3-ts';
 import { cloneDeep, clone } from 'lodash';
+import getOAS from '@/modules/docs/components/specs';
 
-const openapi = useSpecsStore().getOAS()
+const openapi = getOAS()
 
 export function getReferenceSections(ref: string) {
 	return ref.match(/^#\/components\/(.*?)\/(.*?)$/)?.slice(1);
@@ -10,11 +10,11 @@ export function getReferenceSections(ref: string) {
 
 export function getReference(ref: string): undefined | object {
 	const sections = getReferenceSections(ref);
-	if (sections === undefined) return undefined;
+	if (sections === undefined || openapi.value === null) return undefined;
 	const type = sections[0];
 	const name = sections[1];
 
-	return cloneDeep((openapi.components as ComponentsObject)[type][name]);
+	return cloneDeep((openapi.value.components as ComponentsObject)[type][name]);
 }
 
 export function dereference(schema: SchemaObject | ReferenceObject, depth = 1) {

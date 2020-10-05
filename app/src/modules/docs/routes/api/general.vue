@@ -25,15 +25,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from '@vue/composition-api';
-import { useSpecsStore } from '@/stores'
+import getOAS from '../../components/specs';
 
 export default defineComponent({
 	components: {},
 	setup() {
-		const openapi = computed(() => {
-			const store = useSpecsStore()
-			return store.state.oas;
-		})
+		const openapi = getOAS()
 		return { openapi };
 	},
 });

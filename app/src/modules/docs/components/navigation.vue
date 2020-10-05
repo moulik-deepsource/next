@@ -5,14 +5,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, PropType } from '@vue/composition-api';
+import { Section, Divider } from './sections';
 import NavigationItem from './navigation-item.vue';
-import sections from './sections';
 
 export default defineComponent({
 	components: { NavigationItem },
-	setup() {
-		return { sections };
+	props: {
+		sections: {
+			type: Array as PropType<(Section | Divider)[] | null>
+		}
 	},
 });
 </script>
