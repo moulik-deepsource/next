@@ -1,5 +1,4 @@
-import { ReferenceObject, SchemaObject } from 'openapi3-ts';
-import { getReference } from './reference';
+import { SchemaObject } from 'openapi3-ts';
 
 export function getExamplesString(schema: SchemaObject) {
 	return JSON.stringify(getExamples(schema), null, 4);

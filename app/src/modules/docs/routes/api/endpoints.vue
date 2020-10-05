@@ -79,7 +79,6 @@
 
 <script lang="ts">
 import { defineComponent, computed, PropType } from '@vue/composition-api';
-import openapi from '../../components/openapi.json';
 import { Section } from '../../components/sections';
 import RequestComponent from './components/request.vue';
 import { getExamplesString } from './components/example';
@@ -87,6 +86,7 @@ import Schema from './components/schema.vue';
 import { getReference, getReferenceSections, dereference } from './components/reference';
 import Container from './components/container.vue';
 import { copy } from '@/utils/copy-to-clipboard';
+import { useSpecsStore } from '@/stores'
 
 import {
 	PathItemObject,
@@ -133,6 +133,8 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
+		const openapi = useSpecsStore().state.oas
+
 		const schema = computed(() => {
 			const schema: Data[] = [];
 			const paths = openapi.paths as Record<string, PathItemObject>;
@@ -193,8 +195,10 @@ export default defineComponent({
 		});
 
 		const objects = computed(() => {
+			if(openapi.components?.schemas === undefined) return [];
+
 			return Object.entries(openapi.components.schemas)
-				.map(([name, schema]: [string, {}]) => {
+				.map(([name, schema]) => {
 					if ('x-tag' in schema && schema['x-tag'] === props.section.name)
 						return {
 							name,

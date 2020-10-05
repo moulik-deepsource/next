@@ -7,7 +7,6 @@
 
 <script lang="ts">
 import { defineComponent, computed, PropType } from '@vue/composition-api';
-import openapi from '../../../components/openapi.json';
 import { SchemaObject, SchemasObject, ComponentsObject } from 'openapi3-ts';
 import { getReferenceSections, getReference } from './reference';
 

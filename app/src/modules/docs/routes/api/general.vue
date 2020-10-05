@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div v-if="openapi">
 		<h1>General Information</h1>
 		<h2>
 			{{ openapi.info.title }}
@@ -24,12 +24,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
-import openapi from '../../components/openapi.json';
+import { defineComponent, PropType, computed } from '@vue/composition-api';
+import { useSpecsStore } from '@/stores'
 
 export default defineComponent({
 	components: {},
 	setup() {
+		const openapi = computed(() => {
+			const store = useSpecsStore()
+			return store.state.oas;
+		})
 		return { openapi };
 	},
 });

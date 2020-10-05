@@ -9,3 +9,4 @@ export * from './relations';
 export * from './requests';
 export * from './settings';
 export * from './user';
+export * from './specs';

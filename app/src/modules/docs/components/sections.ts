@@ -1,4 +1,34 @@
-import { tags, components } from '../components/openapi.json';
+import { useSpecsStore } from '@/stores'
+import { TagObject } from 'openapi3-ts';
+
+async function getOASSections(dynamic: boolean) {
+	const openapi = await useSpecsStore().getOAS();
+	if( openapi === null ) return []
+	const tags = openapi.tags as TagObject[] | undefined
+	if( tags === undefined ) return []
+
+	return tags.filter((tag) => tag.name.endsWith('Collection') === dynamic)
+	.map((tag) => {
+		const id = tag.name.replace(/ /g, '-').toLowerCase();
+		const section: Section = {
+			name: tag.name,
+			to: `/docs/api-reference/${id}`,
+			description: tag.description,
+		};
+		return section;
+	})
+				
+}
+
+let staticOASSections: Section[] = [];
+let dynamicOASSections: Section[] = [];
+
+(async function loadSections() {
+	staticOASSections = await getOASSections(false);
+	dynamicOASSections = await getOASSections(true);
+})()
+
+
 
 export type Section = {
 	name: string;
@@ -190,29 +220,9 @@ const sections: (Section | Divider)[] = [
 				to: '/docs/api-reference/general',
 			},
 			{ divider: true },
-			...tags
-				.filter((tag) => tag.name.endsWith('Collection'))
-				.map((tag) => {
-					const id = tag.name.replace(/ /g, '-').toLowerCase();
-					const section: Section = {
-						name: tag.name,
-						to: `/docs/api-reference/${id}`,
-						description: tag.description,
-					};
-					return section;
-				}),
+			...dynamicOASSections,
 			{ divider: true },
-			...tags
-				.filter((tag) => tag.name.endsWith('Collection') === false)
-				.map((tag) => {
-					const id = tag.name.replace(/ /g, '-').toLowerCase();
-					const section: Section = {
-						name: tag.name,
-						to: `/docs/api-reference/${id}`,
-						description: tag.description,
-					};
-					return section;
-				}),
+			...staticOASSections
 		],
 	},
 ];

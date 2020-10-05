@@ -1,6 +1,8 @@
-import openapi from '../../../components/openapi.json';
+import { useSpecsStore } from '@/stores';
 import { ComponentsObject, SchemaObject, ReferenceObject } from 'openapi3-ts';
 import { cloneDeep, clone } from 'lodash';
+
+const openapi = useSpecsStore().getOAS()
 
 export function getReferenceSections(ref: string) {
 	return ref.match(/^#\/components\/(.*?)\/(.*?)$/)?.slice(1);
