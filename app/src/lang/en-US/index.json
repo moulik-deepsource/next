@@ -574,6 +574,8 @@
 	"tfa_scan_code": "Scan the code in your authenticator app to finish setting up 2FA",
 	"enter_otp_to_disable_tfa": "Enter the OTP to disable 2FA",
 
+	"copy_to_clipboard": "Copied To Clipboard",
+
 	"use_bold_style": "Use bold style",
 
 	"formatted_value": "Formatted Value",

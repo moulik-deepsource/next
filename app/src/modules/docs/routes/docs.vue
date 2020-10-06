@@ -8,8 +8,14 @@
 			</v-button>
 		</template>
 
+		<template #actions>
+			<v-button icon rounded v-tooltip.bottom="'Download Specs'" @click="downloadSpecs" v-if="isAPIReference">
+				<v-icon name="download" />
+			</v-button>
+		</template>
+
 		<template #navigation>
-			<docs-navigation :sections="navSections" />
+			<docs-navigation :sections="navigationSections" />
 		</template>
 
 		<v-progress-circular v-if="loading" indeterminate/>
@@ -51,7 +57,7 @@ export default defineComponent({
 		const loading = ref(false);
 		const error = ref(null);
 
-		const { section, navSections } = useSection()
+		const { section, navigationSections } = useSection()
 
 		const isAPIReference = computed(() => props.path && props.path.startsWith('/docs/api-reference'));
 		const notFound = computed(() => {
@@ -65,7 +71,7 @@ export default defineComponent({
 
 		watch(() => props.path, loadMD, { immediate: true });
 
-		return { isAPIReference, notFound, title, mdString, section, navSections, loading };
+		return { isAPIReference, notFound, title, mdString, section, navigationSections, loading, downloadSpecs };
 
 		async function loadMD() {
 			if (isAPIReference.value) return;
@@ -89,8 +95,22 @@ export default defineComponent({
 			}
 		}
 
+		function downloadSpecs() {
+			if(openapi.value === null) return;
+
+			const element = document.createElement('a');
+			const oas = JSON.stringify(openapi.value, null, 4)
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(oas));
+			element.setAttribute('download', 'openapi.json');
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+			element.click();
+			document.body.removeChild(element);
+		}
+
 		function useSection() {
-			const navSections = computed(() => {
+			const navigationSections = computed(() => {
 				const sectionsClone = cloneDeep(sections);
 				
 				const reference = sectionsClone.find((s) => 'to' in s && s.to === '/docs/api-reference') as Section | undefined
@@ -112,9 +132,9 @@ export default defineComponent({
 			})
 
 			const section = computed(() => {
-				if(navSections.value === null) return null;
+				if(navigationSections.value === null) return null;
 				loading.value === false;
-				const section = urlToSection(urlSplitter(props.path), navSections.value)
+				const section = urlToSection(urlSplitter(props.path), navigationSections.value)
 				loading.value === false;
 				return section;
 			})
@@ -158,6 +178,7 @@ export default defineComponent({
 				if (urlSections.length === 1) {
 					let finalSection = section;
 					let index = 0;
+					
 					while (finalSection.children !== undefined && finalSection.children.length < index) {
 						if ('divider' in finalSection.children[index]) {
 							index++;
@@ -189,7 +210,7 @@ export default defineComponent({
 				return sectionDeep;
 			}
 
-			return {section, navSections}
+			return {section, navigationSections}
 		}
 	},
 });

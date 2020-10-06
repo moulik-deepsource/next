@@ -140,55 +140,56 @@ export default defineComponent({
 			if(openapi.value === null) return [];
 			const paths = openapi.value.paths as Record<string, PathItemObject>;
 
-			Object.entries(paths).forEach(([key, value]) => {
-				Object.entries(value).forEach(([operationKey, operation]: [string, OperationObject]) => {
+			Object.entries(paths).forEach(([path, pathItem]) => {
+				Object.entries(pathItem).forEach(([operationKey, operation]: [string, OperationObject]) => {
+
 					if (Object.keys(PathItemKeys).includes(operationKey.toUpperCase()) === false) return;
+					if (operation.tags === undefined || operation.tags.includes(props.section.name) === false) return;
 
-					if (operation.tags && operation.tags.includes(props.section.name)) {
-						const parameters: (ParameterObject | ReferenceObject)[] = [];
+					const parameters: (ParameterObject | ReferenceObject)[] = [];
 
-						if (value.parameters) parameters.push(...value.parameters);
-						if (operation.parameters) parameters.push(...operation.parameters);
+					if (pathItem.parameters) parameters.push(...pathItem.parameters);
+					if (operation.parameters) parameters.push(...operation.parameters);
 
-						const data: Data = {
-							path: key,
-							action: operationKey as PathItemKeys,
-							operation,
-						};
+					const data: Data = {
+						path,
+						action: operationKey as PathItemKeys,
+						operation,
+					};
 
-						if (parameters.length > 0) {
-							data.parameters = parameters.map((param) =>
-								'$ref' in param ? (getReference(param.$ref) as ParameterObject) : param
+					if (parameters.length > 0) {
+						data.parameters = parameters.map((param) =>
+							'$ref' in param ? (getReference(param.$ref) as ParameterObject) : param
+						);
+					}
+
+					if (
+						operation.requestBody &&
+						'content' in operation.requestBody &&
+						'application/json' in operation.requestBody.content
+					) {
+						let schema = operation.requestBody.content['application/json'].schema;
+						if (schema && '$ref' in schema) {
+							schema = dereference(schema);
+						}
+
+						const required = schema?.required || [];
+
+						if (schema && 'properties' in schema && schema.properties) {
+
+							data.attributes = Object.entries(schema.properties).map(
+								([name, prop]: [string, SchemaObject]) => {
+									return {
+										name,
+										schema: prop,
+										required: required.includes(name),
+									};
+								}
 							);
 						}
-
-						if (
-							operation.requestBody &&
-							'content' in operation.requestBody &&
-							'application/json' in operation.requestBody.content
-						) {
-							let schema = operation.requestBody.content['application/json'].schema;
-							if (schema && '$ref' in schema) {
-								schema = dereference(schema);
-							}
-
-							const required = schema?.required || [];
-
-							if (schema && 'properties' in schema && schema.properties) {
-								data.attributes = Object.entries(schema.properties).map(
-									([name, prop]: [string, SchemaObject]) => {
-										return {
-											name,
-											schema: prop,
-											required: required.includes(name),
-										};
-									}
-								);
-							}
-						}
-
-						schema.push(data);
 					}
+
+					schema.push(data);
 				});
 			});
 

@@ -1,10 +1,10 @@
 <template>
 	<div class="request">
 		<container title="REQUEST">
-			<template slot="header">
+			<template #header>
 				<div class="request-actions">
-					<v-icon name="copy" @click="copy(action.toUpperCase() + ' ' + url)"></v-icon>
-					<v-icon name="send" @click="request"></v-icon>
+					<v-icon name="copy" @click="copy(action.toUpperCase() + ' ' + url)" />
+					<v-icon name="send" @click="request" />
 				</div>
 			</template>
 			<span>{{ action.toUpperCase() }}</span>
@@ -13,20 +13,20 @@
 
 		<template v-if="requestBody !== null">
 			<container title="REQUEST BODY">
-				<template slot="header">
-					<v-icon name="copy" @click="copy(requestBody)"></v-icon>
+				<template #header>
+					<v-icon name="copy" @click="copy(requestBody)" />
 				</template>
 				<div class="request-body">
 					<pre class="textarea-sizer">{{ requestBody.replace(/\s$/g, '\n.') }}</pre>
-					<textarea class="example" v-model="requestBody"></textarea>
+					<textarea class="example" v-model="requestBody" />
 				</div>
 			</container>
 		</template>
 
 		<container title="RESPONSE">
-			<template slot="header">
+			<template #header>
 				<div class="response-header">
-					<v-icon name="copy" @click="copy(response)"></v-icon>
+					<v-icon name="copy" @click="copy(response)" />
 					<span
 						class="response-status"
 						:class="{ success: [200, 203].includes(Number(responseStatus.status)) }"
@@ -36,7 +36,7 @@
 					</span>
 				</div>
 			</template>
-			<pre class="example">{{ response }}</pre>
+			<pre class="example response">{{ response }}</pre>
 		</container>
 	</div>
 </template>
@@ -74,6 +74,7 @@ export default defineComponent({
 	},
 	setup(props) {
 		const url = ref<string | null>(props.path);
+		
 		watch(
 			() => props.path,
 			(val) => (url.value = val)
@@ -90,7 +91,6 @@ export default defineComponent({
 
 		const _response = ref<Record<string, any> | null>(null);
 		const responseStatus = ref<{ status: number; statusText: string } | null>(null);
-		const _requestBody = ref<string | null>(null);
 
 		const response = computed(() => {
 			if (_response.value !== null) return JSON.stringify(_response.value, null, 4);
@@ -105,6 +105,8 @@ export default defineComponent({
 			}
 			return null;
 		});
+
+		const _requestBody = ref<string | null>(null);
 
 		const requestBody = computed({
 			get() {
@@ -190,11 +192,25 @@ export default defineComponent({
 	.container {
 		margin-bottom: 16px;
 	}
+
+	.v-icon {
+		&:hover {
+			color: var(--foreground-normal);
+		}
+
+		&:active {
+			color: var(--primary);
+		}
+	}
 }
 
 .example {
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.response {
+	max-height: 400px;
 }
 .response-header {
 	display: flex;

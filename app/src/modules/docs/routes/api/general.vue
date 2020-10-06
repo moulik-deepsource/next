@@ -7,15 +7,16 @@
 			<span class="version">OAS v{{ openapi.openapi }}</span>
 		</h2>
 		<span>{{ openapi.info.description }}</span>
-		<h3>Contact</h3>
-		<a v-if="openapi.info.contact.url" target="_blank" :href="openapi.info.contact.url">
-			{{ openapi.info.contact.name }}
-		</a>
-		<a v-if="openapi.info.contact.email" :href="`mailto:${openapi.info.contact.email}`">Email</a>
-		<template v-if="openapi.info.license">
-			<h3>License</h3>
+		<br/>
+		<span v-if="openapi.info.contact">
+			<span>Contact: </span>
+			<a target="_blank" :href="openapi.info.contact.url">{{ openapi.info.contact.name }} </a>
+			<a v-if="openapi.info.contact.email" :href="`mailto:${openapi.info.contact.email}`">Email</a>
+		</span>
+		<span v-if="openapi.info.license">
+			<span> | License: </span>
 			<a :href="openapi.info.license.url" target="_blank">{{ openapi.info.license.name }}</a>
-		</template>
+		</span>
 		<template v-if="openapi.info.externalDocs">
 			<h3>External Documentation</h3>
 			<a :href="openapi.info.externalDocs.url" target="_blank">{{ openapi.info.externalDocs.description }}</a>
