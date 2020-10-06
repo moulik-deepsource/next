@@ -8,14 +8,26 @@
 			</div>
 			<div class="field">
 				<div class="type-label">{{ $t('languages_collection') }}</div>
-				<v-input :class="{ matches: languagesCollectionExists }" db-safe key="languages-collection" v-model="relations[1].one_collection" :disabled="isExisting" :placeholder="$t('collection') + '...'">
+				<v-input
+					:class="{ matches: languagesCollectionExists }"
+					db-safe
+					key="languages-collection"
+					v-model="relations[1].one_collection"
+					:disabled="isExisting"
+					:placeholder="$t('collection') + '...'"
+				>
 					<template #append>
 						<v-menu show-arrow placement="bottom-end">
 							<template #activator="{ toggle }">
-								<v-icon name="list_alt" @click="toggle" v-tooltip="$t('select_existing')" :disabled="isExisting" />
+								<v-icon
+									name="list_alt"
+									@click="toggle"
+									v-tooltip="$t('select_existing')"
+									:disabled="isExisting"
+								/>
 							</template>
 
-							<v-list dense class="monospace">
+							<v-list class="monospace">
 								<v-list-item
 									v-for="item in items"
 									:key="item.value"
@@ -32,8 +44,13 @@
 					</template>
 				</v-input>
 			</div>
-			<v-input :value="relations[1].many_field" :placeholder="$t('foreign_key') + '...'"/>
-			<v-input db-safe :disabled="languagesCollectionExists" v-model="relations[1].one_primary" :placeholder="$t('primary_key') + '...'" />
+			<v-input :value="relations[1].many_field" :placeholder="$t('foreign_key') + '...'" />
+			<v-input
+				db-safe
+				:disabled="languagesCollectionExists"
+				v-model="relations[1].one_primary"
+				:placeholder="$t('primary_key') + '...'"
+			/>
 			<v-icon class="arrow" name="arrow_back" />
 		</div>
 	</div>

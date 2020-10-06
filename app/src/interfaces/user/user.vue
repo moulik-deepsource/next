@@ -48,7 +48,7 @@
 				</v-input>
 			</template>
 
-			<v-list dense>
+			<v-list>
 				<template v-if="usersLoading">
 					<v-list-item v-for="n in 10" :key="`loader-${n}`">
 						<v-list-item-content>
@@ -178,7 +178,7 @@ export default defineComponent({
 			const currentPrimaryKey = computed<string | number>(() => {
 				if (!currentUser.value) return '+';
 				if (!props.value) return '+';
-				
+
 				return props.value;
 			});
 

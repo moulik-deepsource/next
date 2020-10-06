@@ -1,5 +1,5 @@
 <template>
-	<v-list nav>
+	<v-list large>
 		<navigation-item v-for="item in sections" :key="item.to" :section="item"></navigation-item>
 	</v-list>
 </template>
@@ -13,8 +13,8 @@ export default defineComponent({
 	components: { NavigationItem },
 	props: {
 		sections: {
-			type: Array as PropType<(Section | Divider)[] | null>
-		}
+			type: Array as PropType<(Section | Divider)[] | null>,
+		},
 	},
 });
 </script>

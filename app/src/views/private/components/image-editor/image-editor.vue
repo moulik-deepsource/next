@@ -12,9 +12,7 @@
 			<v-progress-circular indeterminate />
 		</div>
 
-		<v-notice type="error" v-else-if="error">
-			error
-		</v-notice>
+		<v-notice type="error" v-else-if="error">error</v-notice>
 
 		<div v-show="imageData && !loading && !error" class="editor-container">
 			<div class="editor">
@@ -54,7 +52,7 @@
 						/>
 					</template>
 
-					<v-list dense>
+					<v-list>
 						<v-list-item @click="aspectRatio = 16 / 9" :active="aspectRatio === 16 / 9">
 							<v-list-item-icon><v-icon name="crop_16_9" /></v-list-item-icon>
 							<v-list-item-content>16:9</v-list-item-content>
@@ -102,12 +100,7 @@
 			<div class="dimensions" v-if="imageData">
 				<v-icon name="info_outline" />
 				{{ $n(imageData.width) }}x{{ $n(imageData.height) }}
-				<template
-					v-if="
-					(imageData.width !== newDimensions.width ||
-						imageData.height !== newDimensions.height)
-				"
-				>
+				<template v-if="imageData.width !== newDimensions.width || imageData.height !== newDimensions.height">
 					->
 					{{ $n(newDimensions.width) }}x{{ $n(newDimensions.height) }}
 				</template>
