@@ -42,11 +42,11 @@
 
 This module is the primary way for interacting with your database content. Here you can access your collections, browse their items, and navigate to individual item forms.
 
-### Collection Browse
+### Collection Listing
 
 A page that lists the collections available to the current user. This is the landing page of the module, and effectively the same as its navigation listing.
 
-### Item Browse
+### Collection Detail
 
 Provides a configurable layout to browse or visualize items within a given collection. Like other browse pages, there are many available features, including:
 
@@ -73,7 +73,7 @@ Most layouts on the browse page support navigating to individual item detail pag
 
 ## User Directory
 
-A module includes a comprehensive listing of all system users within your project. This page has the same features and configuration as [Item Browse](#).
+A module includes a comprehensive listing of all system users within your project. This page has the same features and configuration as [Collection Detail](#).
 
 ### User Detail
 
@@ -108,16 +108,16 @@ While the fields included out-of-the-box are locked from schema changes, you can
 
 ## File Library
 
-This module aggregates all files within the project into one consolidated library. This page has the same features and configuration as [Item Browse](#).
+This module aggregates all files within the project into one consolidated library. This page has the same features and configuration as [Collection Detail](#).
 
 ### File Detail
 
 Similar to other [Item Detail](#) pages, this page provides a custom form for viewing assets and embeds. Directus ships with a full-featured system for digital asset management, with the following fields:
 
-* **Title** — Pulled from @TODO, falls back to a formatted version of the filename
-* **Description** — Pulled from @TODO
-* **Tags** — Pulled from @TODO
-* **Location** — Pulled from @TODO
+* **Title** — Pulled from the file metadata if available, falls back to a formatted version of the filename
+* **Description** — Pulled from the file metadata if available
+* **Tags** — Pulled from the file metadata if available
+* **Location** — Pulled from the file metadata if available
 * **Storage** — The storage adapter where the asset is saved (readonly)
 * **Filename Disk** — The actual name of the file within the storage adapter
 * **Filename Download** — The name used when downloading the file via _Content-Disposition_
@@ -130,7 +130,7 @@ The sidebar's info component also includes the following readonly details:
 * **Created** — The timestamp of when the file was uploaded to the project
 * **Owner** — The Directus user that uploaded the file to the project
 * **Folder** — The current parent folder that contains the file
-* **Metadata** — [Metadata](#) @TODO
+* **Metadata** — [Metadata](#) JSON dump of the file's EXIF, IPTC, and ICC information
 
 ::: Extending Files
 While the fields included out-of-the-box are locked from schema changes, you can extend Directus Files to include additional proprietary fields within [Settings > Data Model](#).
@@ -151,7 +151,7 @@ Our docs are written in markdown (with some additional VuePress styling like thi
 
 ## Actvity History
 
-This module provides a collective timeline of all actions taken within the project. This is a great way to audit user activity or enforce accountability. This is the only system module that is not in the module bar by default — instead being located within the notifications tray of the page sidebar. This page has the same features and configuration as [Item Browse](#).
+This module provides a collective timeline of all actions taken within the project. This is a great way to audit user activity or enforce accountability. This is the only system module that is not in the module bar by default — instead being located within the notifications tray of the page sidebar. This page has the same features and configuration as [Collection Detail](#).
 
 ### Activity Detail
 

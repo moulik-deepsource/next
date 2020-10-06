@@ -27,16 +27,16 @@ const sections: (Section | Divider)[] = [
 				to: '/docs/getting-started/introduction',
 			},
 			{
-				name: 'Troubleshooting',
-				to: '/docs/getting-started/troubleshooting',
+				name: 'Support & FAQ',
+				to: '/docs/getting-started/support',
 			},
 			{
 				name: 'Contributing',
 				to: '/docs/getting-started/contributing',
 			},
 			{
-				name: 'Supporting Directus',
-				to: '/docs/getting-started/supporting-directus',
+				name: 'Backing Directus',
+				to: '/docs/getting-started/backing-directus',
 			},
 		],
 	},
@@ -87,10 +87,6 @@ const sections: (Section | Divider)[] = [
 		default: 'readme',
 		children: [
 			{
-				name: 'Projects',
-				to: '/docs/guides/projects',
-			},
-			{
 				name: 'Collections',
 				to: '/docs/guides/collections',
 			},
@@ -99,12 +95,20 @@ const sections: (Section | Divider)[] = [
 				to: '/docs/guides/fields',
 			},
 			{
-				name: 'Users & Roles',
-				to: '/docs/guides/users-and-roles',
+				name: 'Presets',
+				to: '/docs/guides/presets',
 			},
 			{
-				name: 'Presets & Bookmarks',
-				to: '/docs/guides/presets',
+				name: 'Projects',
+				to: '/docs/guides/projects',
+			},
+			{
+				name: 'Roles & Permissions',
+				to: '/docs/guides/roles-and-permissions',
+			},
+			{
+				name: 'Users',
+				to: '/docs/guides/users',
 			},
 			{
 				name: 'Webhooks',
@@ -175,6 +179,10 @@ const sections: (Section | Divider)[] = [
 			{
 				name: 'Error Codes',
 				to: '/docs/reference/error-codes',
+			},
+			{
+				name: 'Item Rules',
+				to: '/docs/reference/item-rules',
 			},
 		],
 	},
