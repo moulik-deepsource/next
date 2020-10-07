@@ -389,7 +389,7 @@
 			"preferences": "Weergave voorkeuren",
 			"preferences_comment": "Kies de opties om te gebruiken voor het selecteren van bestanden",
 			"template": "Weergavesjabloon",
-			"template_comment": "How to format value on the item browse display",
+			"template_comment": "How to format value on the collection detail display",
 			"template_placeholder": "{{title}} — {{author}}",
 			"allow_create": "Aanmaken toestaan",
 			"allow_create_comment": "Sta de gebruiker toe om een nieuw item te maken uit deze interface",
@@ -445,7 +445,7 @@
 		"repeater": {
 			"repeater": "Repeater",
 			"template": "Weergavesjabloon",
-			"template_comment": "How to format value on the item browse display and inline preview",
+			"template_comment": "How to format value on the collection detail display and inline preview",
 			"template_placeholder": "{{title}} — ({{author}})",
 			"fields": "Velden",
 			"fields_comment": "What fields to show in each repeated row",
@@ -606,7 +606,7 @@
 			"template": "Sjabloon",
 			"template_comment": "How to display the user on the item detail page",
 			"display": "Display",
-			"display_comment": "How to display the user on the item browse page",
+			"display_comment": "How to display the user on the collection detail page",
 			"you": "You will be the creator",
 			"unknown": "Unknown"
 		},
@@ -624,7 +624,7 @@
 			"template": "Sjabloon",
 			"template_comment": "How to display the user on the item detail page",
 			"display": "Display",
-			"display_comment": "How to display the user on the item browse page",
+			"display_comment": "How to display the user on the collection detail page",
 			"you": "You will be the updater",
 			"unknown": "Unknown"
 		},

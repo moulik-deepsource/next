@@ -35,7 +35,7 @@ patch:
               description: What field group this field is part of.
               type: string
             hidden_browse:
-              description: If this field should be hidden from the item browse (listing) page.
+              description: If this field should be hidden from the collection detail (listing) page.
               type: boolean
             hidden_detail:
               description: If this field should be hidden from the item detail (edit) page.
