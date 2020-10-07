@@ -1,4 +1,5 @@
 type: object
+x-tag: Relations
 properties:
   many_collection:
     description: Collection that has the field that holds the foreign key.

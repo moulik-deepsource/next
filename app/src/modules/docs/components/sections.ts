@@ -4,15 +4,18 @@ export type Section = {
 	description?: string;
 	icon?: string;
 	sectionIcon?: string;
+	children?: (Section | Divider)[];
 	sectionName?: string;
-	children?: Section[];
 	default?: string;
-	flat?: boolean;
+};
+
+export type Divider = {
+	divider: boolean;
 };
 
 export const defaultSection = '/docs/getting-started/introduction';
 
-const sections: Section[] = [
+const sections: (Section | Divider)[] = [
 	{
 		icon: 'play_arrow',
 		name: 'Getting Started',
@@ -180,6 +183,17 @@ const sections: Section[] = [
 			{
 				name: 'Item Rules',
 				to: '/docs/reference/item-rules',
+			},
+		],
+	},
+	{
+		icon: 'code',
+		name: 'Api Reference',
+		to: `/docs/api-reference`,
+		children: [
+			{
+				name: 'General Information',
+				to: '/docs/api-reference/general',
 			},
 		],
 	},

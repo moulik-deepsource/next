@@ -178,7 +178,7 @@ export default defineComponent({
 			const currentPrimaryKey = computed<string | number>(() => {
 				if (!currentUser.value) return '+';
 				if (!props.value) return '+';
-				
+
 				return props.value;
 			});
 

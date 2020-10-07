@@ -1,4 +1,5 @@
 type: object
+x-tag: Users
 properties:
   tfa_secret:
     description: The 2FA secret string that's used to generate one time passwords.

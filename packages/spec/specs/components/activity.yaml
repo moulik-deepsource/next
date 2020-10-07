@@ -1,4 +1,5 @@
 type: object
+x-tag: Activity
 properties:
   id:
     description: Unique identifier for the object.

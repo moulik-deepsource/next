@@ -1,4 +1,5 @@
 type: object
+x-tag: Folders
 properties:
   id:
     description: Unique identifier for the folder.

@@ -52,7 +52,9 @@
 					:disabled="item.disabled"
 					@click="multiple ? null : $emit('input', item.value)"
 				>
-					<v-list-item-icon v-if="multiple === false && allowOther === false && itemIcon !== null && item.icon">
+					<v-list-item-icon
+						v-if="multiple === false && allowOther === false && itemIcon !== null && item.icon"
+					>
 						<v-icon :name="item.icon" />
 					</v-list-item-icon>
 					<v-list-item-content>
