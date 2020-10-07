@@ -29,7 +29,7 @@ properties:
     type: integer
     nullable: true
   hidden_browse:
-    description: If this field should be hidden from the item browse (listing) page.
+    description: If this field should be hidden from the collection detail (listing) page.
     example: true
     type: boolean
   hidden_detail:
