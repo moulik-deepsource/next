@@ -10,6 +10,7 @@ import marked from 'marked';
 import highlight from 'highlight.js';
 import hashScoll from '@/composables/use-hash-scroll';
 import { copy } from '@/utils/copy-to-clipboard';
+import 'highlight.js/styles/github.css'
 
 export default defineComponent({
 	setup(props, { slots }) {
@@ -50,7 +51,9 @@ export default defineComponent({
 			marked.use({ renderer });
 
 			htmlString = marked(htmlString, {
-				highlight: (code) => highlight.highlightAuto(code).value,
+				highlight: (code, lang) => {
+					return highlight.highlightAuto(code, [lang]).value
+				},
 			});
 
 			htmlString = htmlString.replaceAll(
@@ -324,6 +327,7 @@ export default defineComponent({
 			}
 
 			table {
+				min-width: 100%;
 				margin: 40px 0;
 				padding: 0;
 				border-collapse: collapse;
@@ -414,6 +418,11 @@ export default defineComponent({
 
 				&-title {
 					font-weight: bold;
+					margin-bottom: 0.5em;
+				}
+
+				&-body {
+					margin-top: 0.5em;
 				}
 
 				&.tip {

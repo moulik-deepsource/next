@@ -1,4 +1,5 @@
 type: object
+x-tag: Webhooks
 properties:
   id:
     description: The index of the webhook.

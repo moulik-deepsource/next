@@ -10,6 +10,8 @@
 	"only_show_the_file_extension": "Only show the file extension",
 	"textarea": "Textarea",
 
+	"enter_password_to_enable_tfa": "Enter your password to enable Two-Factor Authentication",
+
 	"add_field": "Add Field",
 
 	"role_name": "Role Name",
@@ -339,7 +341,7 @@
 	"related_values": "Related Values",
 
 	"last_page": "Last Page",
-	"last_login": "Last Login",
+	"last_access": "Last Access",
 
 	"fill_template": "Fill with Template Value",
 
@@ -550,6 +552,7 @@
 	"help_and_docs": "Help & Docs",
 
 	"documentation": "Documentation",
+	"api_reference": "API Reference",
 
 	"card_size": "Card Size",
 	"sort_field": "Sort Field",
@@ -571,6 +574,8 @@
 	"tfa_scan_code": "Scan the code in your authenticator app to finish setting up 2FA",
 	"enter_otp_to_disable_tfa": "Enter the OTP to disable 2FA",
 
+	"copy_to_clipboard": "Copied To Clipboard",
+
 	"use_bold_style": "Use bold style",
 
 	"formatted_value": "Formatted Value",
@@ -585,7 +590,7 @@
 	"errors": {
 		"COLLECTION_NOT_FOUND": "Collection doesn't exist.",
 		"FIELD_NOT_FOUND": "Field not found.",
-		"NO_PERMISSION": "Forbidden.",
+		"FORBIDDEN": "Forbidden.",
 		"INVALID_CREDENTIALS": "Wrong username or password.",
 		"INVALID_OTP": "Wrong one-time password.",
 		"INVALID_PAYLOAD": "Invalid payload.",
@@ -980,8 +985,8 @@
       "action": "Action",
       "collection": "Collection",
       "item": "Item Primary Key",
-      "action_by": "Action By",
-      "action_on": "Action On",
+      "user": "Action By",
+      "timestamp": "Action On",
       "edited_on": "Edited On",
       "comment_deleted_on": "Comment Deleted On",
       "ip": "IP Address",
@@ -1055,7 +1060,7 @@
 		"enforce_tfa": "Require 2FA",
 		"users": "Users in Role",
 		"module_list": "Module Navigation",
-		"collection_list": "Collections Navigation"
+		"collection_list": "Collection Navigation"
 	}
   },
 
@@ -1335,6 +1340,7 @@
   "select_existing": "Select Existing",
   "select_field": "Select a Field",
   "select_from_device": "Select from device",
+  "select_field_type": "Select a field type",
   "select_interface": "Select an interface",
   "select_interface_below": "Select an interface below",
   "select_statuses_copy": "Select the statuses the user can use",

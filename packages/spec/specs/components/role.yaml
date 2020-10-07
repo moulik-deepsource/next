@@ -1,4 +1,5 @@
 type: object
+x-tag: Roles
 properties:
   collection_listing:
     description: Custom override for the admin app collection navigation.

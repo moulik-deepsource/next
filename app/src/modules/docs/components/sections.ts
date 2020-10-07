@@ -4,15 +4,18 @@ export type Section = {
 	description?: string;
 	icon?: string;
 	sectionIcon?: string;
+	children?: (Section | Divider)[];
 	sectionName?: string;
-	children?: Section[];
 	default?: string;
-	flat?: boolean;
+};
+
+export type Divider = {
+	divider: boolean;
 };
 
 export const defaultSection = '/docs/getting-started/introduction';
 
-const sections: Section[] = [
+const sections: (Section | Divider)[] = [
 	{
 		icon: 'play_arrow',
 		name: 'Getting Started',
@@ -24,16 +27,16 @@ const sections: Section[] = [
 				to: '/docs/getting-started/introduction',
 			},
 			{
-				name: 'Troubleshooting',
-				to: '/docs/getting-started/troubleshooting',
+				name: 'Support & FAQ',
+				to: '/docs/getting-started/support',
 			},
 			{
 				name: 'Contributing',
 				to: '/docs/getting-started/contributing',
 			},
 			{
-				name: 'Supporting Directus',
-				to: '/docs/getting-started/supporting-directus',
+				name: 'Backing Directus',
+				to: '/docs/getting-started/backing-directus',
 			},
 		],
 	},
@@ -44,16 +47,16 @@ const sections: Section[] = [
 		default: 'readme',
 		children: [
 			{
-				name: 'Database Mirroring',
-				to: '/docs/concepts/database-mirroring',
+				name: 'Platform Overview',
+				to: '/docs/concepts/platform-overview',
 			},
 			{
 				name: 'App Overview',
 				to: '/docs/concepts/app-overview',
 			},
 			{
-				name: 'App Components',
-				to: '/docs/concepts/app-components',
+				name: 'App Extensions',
+				to: '/docs/concepts/app-extensions',
 			},
 			{
 				name: 'Activity & Versions',
@@ -84,38 +87,36 @@ const sections: Section[] = [
 		default: 'readme',
 		children: [
 			{
-				name: 'Data Model',
+				name: 'Collections',
+				to: '/docs/guides/collections',
+			},
+			{
+				name: 'Fields',
 				to: '/docs/guides/fields',
-				children: [
-					{
-						name: 'Standard Field',
-						to: '/docs/guides/fields/creating-a-standard-field',
-					},
-					{
-						name: 'Presentation Field',
-						to: '/docs/guides/fields/creating-a-presentation-field',
-					},
-					{
-						name: 'Many-to-One Field',
-						to: '/docs/guides/fields/creating-a-many-to-one-field',
-					},
-					{
-						name: 'One-to-Many Field',
-						to: '/docs/guides/fields/creating-a-one-to-many-field',
-					},
-					{
-						name: 'Many-to-Many Field',
-						to: '/docs/guides/fields/creating-a-many-to-many-field',
-					},
-					{
-						name: 'Many-to-Any Field',
-						to: '/docs/guides/fields/creating-a-many-to-any-field',
-					},
-					{
-						name: 'Translated Fields',
-						to: '/docs/guides/fields/creating-translated-fields',
-					},
-				],
+			},
+			{
+				name: 'Presets',
+				to: '/docs/guides/presets',
+			},
+			{
+				name: 'Projects',
+				to: '/docs/guides/projects',
+			},
+			{
+				name: 'Roles & Permissions',
+				to: '/docs/guides/roles-and-permissions',
+			},
+			{
+				name: 'Users',
+				to: '/docs/guides/users',
+			},
+			{
+				name: 'Webhooks',
+				to: '/docs/guides/webhooks',
+			},
+			{
+				name: 'White-Labeling',
+				to: '/docs/guides/white-labeling',
 			},
 			{
 				name: 'Extensions',
@@ -159,42 +160,6 @@ const sections: Section[] = [
 					},
 				],
 			},
-			{
-				name: 'Collections',
-				to: '/docs/guides/creating-a-collection',
-			},
-			{
-				name: 'Presets & Bookmarks',
-				to: '/docs/guides/managing-presets-and-bookmarks',
-			},
-			{
-				name: 'Roles & Permissions',
-				to: '/docs/guides/managing-roles-and-permissions',
-			},
-			{
-				name: 'Webhooks',
-				to: '/docs/guides/managing-webhooks',
-			},
-			{
-				name: 'Creating a Project',
-				to: '/docs/guides/creating-a-project',
-			},
-			{
-				name: 'Configuring a Project',
-				to: '/docs/guides/configuring-the-api',
-			},
-			{
-				name: 'Setting up a Project',
-				to: '/docs/guides/configuring-project-settings',
-			},
-			{
-				name: 'White-Labeling a Project',
-				to: '/docs/guides/white-labeling-a-project',
-			},
-			{
-				name: 'Upgrading a Project',
-				to: '/docs/guides/upgrading-a-project',
-			},
 		],
 	},
 	{
@@ -204,6 +169,10 @@ const sections: Section[] = [
 		default: 'readme',
 		children: [
 			{
+				name: 'Environment Variables',
+				to: '/docs/reference/environment-variables',
+			},
+			{
 				name: 'Command Line Interface',
 				to: '/docs/reference/command-line-interface',
 			},
@@ -212,8 +181,19 @@ const sections: Section[] = [
 				to: '/docs/reference/error-codes',
 			},
 			{
-				name: 'Project Env Variables',
-				to: '/docs/reference/project-environment-variables',
+				name: 'Item Rules',
+				to: '/docs/reference/item-rules',
+			},
+		],
+	},
+	{
+		icon: 'code',
+		name: 'Api Reference',
+		to: `/docs/api-reference`,
+		children: [
+			{
+				name: 'General Information',
+				to: '/docs/api-reference/general',
 			},
 		],
 	},

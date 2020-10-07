@@ -1,4 +1,5 @@
 type: object
+x-tag: Collection presets
 properties:
   collection:
     description: What collection this collection preset is used for.

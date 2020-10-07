@@ -1,4 +1,5 @@
 type: object
+x-tag: Revisions
 properties:
   activity:
     description: Unique identifier for the [activity](/api/activity) record.
