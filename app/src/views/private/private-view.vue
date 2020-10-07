@@ -10,7 +10,7 @@
 				</div>
 			</div>
 		</aside>
-		<div class="content" ref="contentEl">
+		<div id="content" ref="contentEl">
 			<header-bar :title="title" @toggle:drawer="drawerOpen = !drawerOpen" @toggle:nav="navOpen = !navOpen">
 				<template v-for="(_, scopedSlotName) in $scopedSlots" v-slot:[scopedSlotName]="slotData">
 					<slot :name="scopedSlotName" v-bind="slotData" />
@@ -320,7 +320,7 @@ export default defineComponent({
 		}
 	}
 
-	.content {
+	#content {
 		position: relative;
 		flex-grow: 1;
 		width: 100%;

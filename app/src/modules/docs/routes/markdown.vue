@@ -1,6 +1,6 @@
 <template>
 	<div class="docs selectable">
-		<div class="md" v-html="html" />
+		<div class="md" v-html="html" @click="onClick" />
 	</div>
 </template>
 
@@ -8,6 +8,8 @@
 import { defineComponent, ref, computed, watch, PropType, onMounted, onUpdated } from '@vue/composition-api';
 import marked from 'marked';
 import highlight from 'highlight.js';
+import hashScoll from '@/composables/use-hash-scroll';
+import { copy } from '@/utils/copy-to-clipboard';
 import 'highlight.js/styles/github.css'
 
 export default defineComponent({
@@ -17,7 +19,13 @@ export default defineComponent({
 		onMounted(generateHTML);
 		onUpdated(generateHTML);
 
-		return { html };
+		return { html, onClick };
+
+		function onClick($event: Event) {
+			if ($event.target instanceof HTMLElement && $event.target.classList.contains('copy')) {
+				copy(window.location.href.split('#')[0] + $event.target.getAttribute('href'));
+			}
+		}
 
 		function generateHTML() {
 			if (slots.default === null || !slots.default()?.[0]?.text) {
@@ -27,6 +35,20 @@ export default defineComponent({
 
 			let htmlString = slots.default()[0].text!;
 			const hintRegex = /<p>:::(.*?) (.*?)\r?\n((\s|.)*?):::<\/p>/gm;
+
+			const renderer = {
+				heading(text: string, level: string) {
+					const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+
+					return `
+					<h${level} id="${escapedText}">
+						<a class="heading-link copy" href="#${escapedText}">#</a>
+						${text}
+					</h${level}>`;
+				},
+			};
+			// @ts-ignore We only want to override a single function not all. Marked should maybe change the Renderer to an abstact class.
+			marked.use({ renderer });
 
 			htmlString = marked(htmlString, {
 				highlight: (code, lang) => {
@@ -42,6 +64,8 @@ export default defineComponent({
 			);
 
 			html.value = htmlString;
+
+			hashScoll('.private-view #content');
 		}
 	},
 });
@@ -87,6 +111,21 @@ export default defineComponent({
 				padding: 0;
 				font-weight: 600;
 				cursor: text;
+
+				a {
+					position: absolute;
+					right: 100%;
+					padding-right: 4px;
+					opacity: 0;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+
+				&:hover a {
+					opacity: 1;
+				}
 			}
 
 			h1 {
@@ -137,8 +176,8 @@ export default defineComponent({
 			tt {
 				margin: 0 1px;
 				padding: 0 4px;
-				font-family: var(--family-monospace);
 				font-size: 15px;
+				font-family: var(--family-monospace);
 				white-space: nowrap;
 				background-color: var(--background-page);
 				border: 1px solid var(--background-normal);
@@ -273,9 +312,9 @@ export default defineComponent({
 			}
 
 			blockquote {
-				font-size: 18px;
 				padding: 0 20px;
 				color: var(--foreground-subdued);
+				font-size: 18px;
 				border-left: 2px solid var(--background-normal);
 			}
 
@@ -344,8 +383,7 @@ export default defineComponent({
 				}
 
 				&.shadow {
-					box-shadow: 0px 5px 10px 0px rgba(23,41,64,0.1),
-								0px 2px 40px 0px rgba(23,41,64,0.05);
+					box-shadow: 0px 5px 10px 0px rgba(23, 41, 64, 0.1), 0px 2px 40px 0px rgba(23, 41, 64, 0.05);
 				}
 			}
 
@@ -372,11 +410,11 @@ export default defineComponent({
 
 			.hint {
 				display: inline-block;
+				width: 100%;
 				margin: 20px 0;
 				padding: 0 20px;
 				background-color: var(--background-subdued);
 				border-left: 2px solid var(--primary);
-				width: 100%;
 
 				&-title {
 					font-weight: bold;
