@@ -31,6 +31,8 @@ columns:
       column: id
   public_note:
     type: text
+  css_override:
+    type: text
   auth_login_attempts:
     type: integer
     default: 25

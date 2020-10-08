@@ -200,6 +200,25 @@ fields:
     sort: 14
     width: half
   - collection: directus_settings
+    field: customization_divider
+    interface: divider
+    locked: true
+    options:
+      icon: storage
+      title: Customization
+      color: '#2F80ED'
+    special: alias
+    sort: 15
+    width: full
+  - collection: directus_settings
+    field: css_override
+    interface: code
+    locked: true
+    options:
+      language: css
+    sort: 16
+    width: full
+  - collection: directus_settings
     field: id
     hidden: true
     locked: true
